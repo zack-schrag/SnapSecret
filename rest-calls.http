@@ -1,0 +1,15 @@
+###
+# @name CreateSecret
+POST http://localhost:7071/api/v1/secrets
+Content-Type: application/json
+
+{
+    "expireIn": "0.01:00:00.0000",
+    "text": "foobar"
+}
+
+###
+@location = {{CreateSecret.response.headers.location}}
+
+###
+POST {{location}}
