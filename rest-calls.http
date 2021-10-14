@@ -1,6 +1,9 @@
+# @host = http://localhost:7071
+@host = https://snapsecretfunctionapp.azurewebsites.net
+
 ###
 # @name CreateSecret
-POST http://localhost:7071/api/v1/secrets
+POST {{host}}/api/v1/secrets
 Content-Type: application/json
 
 {
