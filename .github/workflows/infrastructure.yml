@@ -19,6 +19,8 @@ jobs:
         with:
           command: preview
           stack-name: Production
+          comment-on-pr: true
+          upsert: true
         env:
           ARM_CLIENT_ID: ${{ secrets.ARM_CLIENT_ID }}
           ARM_CLIENT_SECRET: ${{ secrets.ARM_CLIENT_SECRET }}
