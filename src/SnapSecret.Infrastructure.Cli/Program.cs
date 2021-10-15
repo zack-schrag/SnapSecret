@@ -12,5 +12,5 @@ var settings = new AzureKeyVaultInfrastructureProviderSettings
 
 var provider  = new AzureKeyVaultInfrastructureProvider(settings);
 
-await provider.BuildAsync();
-//await provider.DestroyAsync();
+//await provider.BuildAsync();
+await provider.DestroyAsync();
