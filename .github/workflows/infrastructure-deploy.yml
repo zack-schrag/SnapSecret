@@ -1,6 +1,7 @@
-name: Pulumi
+name: Deploy Azure Infrastructure
 on:
-  - pull_request
+  push:
+    branches: [ 'main' ]
 jobs:
   preview:
     name: Preview
@@ -18,9 +19,8 @@ jobs:
       - run: dotnet build -c Release
       - uses: pulumi/actions@v3
         with:
-          command: preview
+          command: up
           stack-name: Production
-          comment-on-pr: true
           upsert: true
           work-dir: ./src/SnapSecret.Infrastructure.PulumiAzure
         env:
