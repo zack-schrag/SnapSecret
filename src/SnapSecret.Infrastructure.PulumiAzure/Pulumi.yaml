@@ -1,0 +1,3 @@
+name: SnapSecret.Infrastructure.PulumiAzure
+runtime: dotnet
+description: Azure Infrastructure for SnapSecret

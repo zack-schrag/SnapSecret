@@ -1,5 +1,4 @@
 ﻿using Pulumi;
-using Pulumi.Automation;
 using Pulumi.AzureNative.Insights;
 using Pulumi.AzureNative.KeyVault;
 using Pulumi.AzureNative.KeyVault.Inputs;
@@ -8,95 +7,28 @@ using Storage = Pulumi.AzureNative.Storage;
 using Pulumi.AzureNative.Web;
 using ManagedServiceIdentityType = Pulumi.AzureNative.Web.ManagedServiceIdentityType;
 using Pulumi.AzureNative.Web.Inputs;
-using SnapSecret.Application.Abstractions;
 
-
-namespace SnapSecret.SecretsProviders.AzureKeyVault
+namespace SnapSecret.Infrastructure.Core
 {
-    public class AzureKeyVaultInfrastructureProvider : ISecretsInfrastructureProvider
+    public class AzureSnapSecretStack : Stack
     {
-        private readonly AzureKeyVaultInfrastructureProviderSettings _settings;
-
-        public AzureKeyVaultInfrastructureProvider(AzureKeyVaultInfrastructureProviderSettings settings)
+        public AzureSnapSecretStack()
         {
-            _settings = settings;
-        }
+            var stackName = Pulumi.Deployment.Instance.StackName;
+            var location = new Config("azure-native").Require("location");
+            var keyVaultUri = new Config("SnapSecret").Require("KeyVaultUri");
 
-        public async Task BuildAsync()
-        {
-            var program = GetProgram(string.Empty);
-            var stack = await GetStackAsync(program);
-
-            var outputs = await stack.GetOutputsAsync();
-            var outputKeyVaultUri = outputs.Any() ? (string)outputs["KeyVaultUri"].Value : string.Empty;
-
-            var keyVaultUri = await BuildInternalAsync(outputKeyVaultUri);
-
-            if (string.IsNullOrEmpty(outputKeyVaultUri))
-            {
-                await BuildInternalAsync(keyVaultUri);
-            }
-        }
-
-        public async Task DestroyAsync()
-        {
-            var program = GetProgram(string.Empty);
-            var stack = await GetStackAsync(program);
-
-            var result = await stack.DestroyAsync();
-
-            Console.WriteLine(result.StandardOutput);
-        }
-
-        private PulumiFn GetProgram(string keyVaultUri)
-        {
-            return PulumiFn.Create(() =>
-            {
-                return CreateResources(keyVaultUri);
-            });
-        }
-
-        private async Task<WorkspaceStack> GetStackAsync(PulumiFn program)
-        {
-            var stackArgs = new InlineProgramArgs(_settings.ProjectName, _settings.StackName, program);
-
-            var stack = await LocalWorkspace.CreateOrSelectStackAsync(stackArgs);
-
-            await stack.Workspace.InstallPluginAsync("azure-native", "v1.36.0");
-
-            return stack;
-        }
-
-        private async Task<string> BuildInternalAsync(string keyVaultUri)
-        {
-            var program = GetProgram(keyVaultUri);
-
-            var stack = await GetStackAsync(program);            
-
-            var upResult = await stack.UpAsync();
-
-            var outputs = await stack.GetOutputsAsync();
-
-            var outputKeyVaultUri = outputs.Any() ? (string)outputs["KeyVaultUri"].Value : string.Empty;
-
-            Console.WriteLine(upResult.StandardOutput);
-
-            return outputKeyVaultUri;
-        }
-
-        private Dictionary<string, object?> CreateResources(string keyVaultUri)
-        {
             var resourceGroup = new ResourceGroup("ResourceGroup", new ResourceGroupArgs
             {
-                ResourceGroupName = "SnapSecret",
-                Location = _settings.Location
+                ResourceGroupName = $"SnapSecret{stackName}",
+                Location = location
             });
 
             var plan = new AppServicePlan("AppServicePlan", new AppServicePlanArgs()
             {
                 ResourceGroupName = resourceGroup.Name,
                 Location = resourceGroup.Location,
-                Name = "SnapSecretAppServicePlan",
+                Name = $"SnapSecretAppServicePlan{stackName}",
                 Reserved = true,
                 Sku = new SkuDescriptionArgs
                 {
@@ -108,7 +40,7 @@ namespace SnapSecret.SecretsProviders.AzureKeyVault
             var storageAccount = new Storage.StorageAccount("StorageAccount", new Storage.StorageAccountArgs
             {
                 ResourceGroupName = resourceGroup.Name,
-                AccountName = $"{_settings.ProjectName}{_settings.StackName}".ToLower(),
+                AccountName = $"snapsecret{stackName}".ToLower(),
                 Location = resourceGroup.Location,
                 Sku = new Storage.Inputs.SkuArgs
                 {
@@ -139,7 +71,7 @@ namespace SnapSecret.SecretsProviders.AzureKeyVault
                 ContainerName = container.Name,
                 ResourceGroupName = resourceGroup.Name,
                 Type = Storage.BlobType.Block,
-                Source = new FileArchive($"{prefix}SnapSecret.AzureFunctions/bin/Debug/net6.0")
+                Source = new FileArchive($"{prefix}SnapSecret.AzureFunctions/bin/Release/net6.0")
             });
 
             var codeBlobUrl = SignedBlobReadUrl(blob, container, storageAccount, resourceGroup);
@@ -148,7 +80,7 @@ namespace SnapSecret.SecretsProviders.AzureKeyVault
             {
                 Location = resourceGroup.Location,
                 ResourceGroupName = resourceGroup.Name,
-                ResourceName = "SnapSecretAppInsights",
+                ResourceName = $"SnapSecretAppInsights{stackName}",
                 ApplicationType = "web",
                 Kind = "web"
             });
@@ -159,7 +91,7 @@ namespace SnapSecret.SecretsProviders.AzureKeyVault
                     {
                         new NameValuePairArgs { Name = "FUNCTIONS_WORKER_RUNTIME", Value = "dotnet" },
                         new NameValuePairArgs { Name = "FUNCTIONS_EXTENSION_VERSION", Value = "~4" },
-                        new NameValuePairArgs { Name = "AZURE_FUNCTIONS_ENVIRONMENT", Value = _settings.StackName },
+                        new NameValuePairArgs { Name = "AZURE_FUNCTIONS_ENVIRONMENT", Value = stackName },
                         new NameValuePairArgs { Name = "AzureWebJobsStorage", Value = GetConnectionString(resourceGroup.Name, storageAccount.Name) },
                         new NameValuePairArgs { Name = "APPLICATIONINSIGHTS_CONNECTION_STRING", Value = Output.Format($"InstrumentationKey={appInsights.InstrumentationKey}") },
                         new NameValuePairArgs { Name = "WEBSITE_RUN_FROM_PACKAGE", Value = codeBlobUrl },
@@ -170,7 +102,7 @@ namespace SnapSecret.SecretsProviders.AzureKeyVault
 
             var app = new WebApp("WebApp", new WebAppArgs
             {
-                Name = "SnapSecretFunctionApp",
+                Name = $"SnapSecretFunctionApp{stackName}",
                 Identity = new ManagedServiceIdentityArgs
                 {
                     Type = ManagedServiceIdentityType.SystemAssigned
@@ -189,7 +121,7 @@ namespace SnapSecret.SecretsProviders.AzureKeyVault
             {
                 Location = resourceGroup.Location,
                 ResourceGroupName = resourceGroup.Name,
-                VaultName = "SnapSecretKeyVault",
+                VaultName = $"SnapSecretKeyVault{stackName}".Substring(0, 24),
                 Properties = new VaultPropertiesArgs
                 {
                     AccessPolicies = new[] {
@@ -213,14 +145,15 @@ namespace SnapSecret.SecretsProviders.AzureKeyVault
                 }
             });
 
-            return new Dictionary<string, object?>
-            {
-                { "KeyVaultUri", keyVault.Properties.Apply(p => p.VaultUri) }
-            };
+            KeyVaultUri = keyVault.Properties.Apply(p => p.VaultUri);
         }
+
+        [Output]
+        public Output<string?> KeyVaultUri { get; set; }
+
         private static Output<string> SignedBlobReadUrl(Storage.Blob blob, Storage.BlobContainer container, Storage.StorageAccount account, ResourceGroup resourceGroup)
         {
-            return Output.Tuple<string, string, string, string>(
+            return Output.Tuple(
                 blob.Name, container.Name, account.Name, resourceGroup.Name).Apply(t =>
                 {
                     (string blobName, string containerName, string accountName, string resourceGroupName) = t;
@@ -247,7 +180,7 @@ namespace SnapSecret.SecretsProviders.AzureKeyVault
         private static Output<string> GetConnectionString(Input<string> resourceGroupName, Input<string> accountName)
         {
             // Retrieve the primary storage account key.
-            var storageAccountKeys = Output.All<string>(resourceGroupName, accountName).Apply(t =>
+            var storageAccountKeys = Output.All(resourceGroupName, accountName).Apply(t =>
             {
                 var resourceGroupName = t[0];
                 var accountName = t[1];
@@ -266,15 +199,5 @@ namespace SnapSecret.SecretsProviders.AzureKeyVault
                 return Output.Format($"DefaultEndpointsProtocol=https;AccountName={accountName};AccountKey={primaryStorageKey}");
             });
         }
-    }
-
-    public class AzureKeyVaultInfrastructureProviderSettings
-    {
-        public string StackName { get; set; }
-        public string ProjectName { get; set; } = "SnapSecret";
-        //public string AzureClientId { get; set; }
-        //public string AzureClientSecret {  get; set; }
-        //public string AzureTenantId { get; set;  }
-        public string Location { get; set; }
     }
 }
