@@ -2,9 +2,9 @@ name: Pulumi
 on:
   - pull_request
 jobs:
-  environment: Production
   preview:
     name: Preview
+    environment: Production
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
