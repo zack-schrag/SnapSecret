@@ -71,7 +71,7 @@ namespace SnapSecret.Infrastructure.Core
                 ContainerName = container.Name,
                 ResourceGroupName = resourceGroup.Name,
                 Type = Storage.BlobType.Block,
-                Source = new FileArchive($"{prefix}SnapSecret.AzureFunctions/bin/Debug/net6.0")
+                Source = new FileArchive($"{prefix}SnapSecret.AzureFunctions/bin/Release/net6.0")
             });
 
             var codeBlobUrl = SignedBlobReadUrl(blob, container, storageAccount, resourceGroup);

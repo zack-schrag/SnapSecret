@@ -15,6 +15,7 @@ jobs:
         with:
           dotnet-version: '6.0'
           include-prerelease: true
+      - run: dotnet build -c Release
       - uses: pulumi/actions@v3
         with:
           command: preview
