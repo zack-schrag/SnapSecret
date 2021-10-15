@@ -1,5 +1,5 @@
 # @host = http://localhost:7071
-@host = https://snapsecretfunctionapp.azurewebsites.net
+@host = https://snapsecretfunctionappproduction.azurewebsites.net
 
 ###
 # @name CreateSecret
@@ -8,7 +8,7 @@ Content-Type: application/json
 
 {
     "expireIn": "0.01:00:00.0000",
-    "text": "foobar"
+    "text": "MySuperSecretPassword"
 }
 
 ###

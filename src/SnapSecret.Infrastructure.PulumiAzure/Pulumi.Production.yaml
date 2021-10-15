@@ -1,3 +1,3 @@
 config:
   azure-native:location: WestUS
-  SnapSecret:KeyVaultUri: ""
+  SnapSecret:KeyVaultUri: "https://snapsecretkeyvaultproduc.vault.azure.net/"
