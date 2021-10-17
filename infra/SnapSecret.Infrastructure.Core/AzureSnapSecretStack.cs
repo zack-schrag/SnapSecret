@@ -49,7 +49,7 @@ namespace SnapSecret.Infrastructure.Core
                 Kind = Storage.Kind.StorageV2
             });
 
-            var container = new Storage.BlobContainer("BlobContainer", new Storage.BlobContainerArgs
+            var container = new Storage.BlobContainer("zips-container", new Storage.BlobContainerArgs
             {
                 AccountName = storageAccount.Name,
                 PublicAccess = Storage.PublicAccess.None,
@@ -67,7 +67,7 @@ namespace SnapSecret.Infrastructure.Core
                 prefix = "../../../../../src/";
             }
 
-            var blob = new Storage.Blob("Zip", new Storage.BlobArgs
+            var blob = new Storage.Blob("zip", new Storage.BlobArgs
             {
                 AccountName = storageAccount.Name,
                 ContainerName = container.Name,
