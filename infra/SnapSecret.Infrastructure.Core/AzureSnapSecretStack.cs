@@ -95,7 +95,7 @@ namespace SnapSecret.Infrastructure.Core
                         new NameValuePairArgs { Name = "FUNCTIONS_EXTENSION_VERSION", Value = "~4" },
                         new NameValuePairArgs { Name = "AZURE_FUNCTIONS_ENVIRONMENT", Value = stackName },
                         new NameValuePairArgs { Name = "AzureWebJobsStorage", Value = GetConnectionString(resourceGroup.Name, storageAccount.Name) },
-                        new NameValuePairArgs { Name = "APPLICATIONINSIGHTS_CONNECTION_STRING", Value = Output.Format($"InstrumentationKey={appInsights.InstrumentationKey}") },
+                        new NameValuePairArgs { Name = "APPINSIGHTS_INSTRUMENTATIONKEY", Value = appInsights.InstrumentationKey },
                         new NameValuePairArgs { Name = "WEBSITE_RUN_FROM_PACKAGE", Value = codeBlobUrl },
                         new NameValuePairArgs { Name = "AzureKeyVaultSecretsProvider__KeyVaultUri", Value = keyVaultUri}
                     },
