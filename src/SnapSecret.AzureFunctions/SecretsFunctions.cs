@@ -15,7 +15,7 @@ namespace SnapSecret.AzureFunctions
 {
     public class SecretsFunctions
     {
-        private const string Version = "1";
+        private const string SecretsBasePath = "v1/secrets";
 
         private readonly ISnapSecretBusinessLogic _snapSecretBusinessLogic;
 
@@ -26,11 +26,10 @@ namespace SnapSecret.AzureFunctions
 
         [FunctionName("CreateSecret")]
         public async Task<IActionResult> CreateSecretAsync(
-            [HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = $"v{Version}/secrets")] HttpRequest req,
+            [HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = SecretsBasePath)] HttpRequest req,
             ILogger log)
         {
             log.LogInformation("Creating new secret");
-            log.LogInformation($"{req.Scheme}://{req.Host}{req.Path}/foo");
 
             string requestBody = await new StreamReader(req.Body).ReadToEndAsync();
 
@@ -45,33 +44,29 @@ namespace SnapSecret.AzureFunctions
                 return new StatusCodeResult(500);
             }
 
-            var secret = createSecretRequest.ToShareableTextSecret();
+            return await CreateSecretInternalAsync(req, createSecretRequest, log);
+        }
 
-            if (secret is null)
-            {
-                log.LogError($"Failed to convert {typeof(CreateSecretRequest)} request to {typeof(IShareableTextSecret)}");
-                return new StatusCodeResult(500);
-            }
+        [FunctionName("SlackCreateSecret")]
+        public async Task<IActionResult> SlackCreateSecretAsync(
+            [HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = $"{SecretsBasePath}-slack")] HttpRequest req,
+            ILogger log)
+        {
+            log.LogInformation("Creating new secret");
 
-            var (secretId, error) = await _snapSecretBusinessLogic.SubmitSecretAsync(secret);
+            var formCollection = await req.ReadFormAsync();
 
-            if (error != null)
+            var createSecretRequest = new CreateSecretRequest
             {
-                return new ObjectResult(error.ToResponse())
-                {
-                    StatusCode = 500
-                };
-            }
-            
-            return new CreatedResult($"{req.Scheme}://{req.Host}{req.Path}/{secretId}", new
-            {
-                message = "Successfully created secret"
-            });
+                Text = formCollection["text"]
+            };
+
+            return await CreateSecretInternalAsync(req, createSecretRequest, log);
         }
 
         [FunctionName("AccessSecret")]
         public async Task<IActionResult> AccessSecretAsync(
-            [HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = $"v{Version}/secrets/{{secretId}}")] HttpRequest req,
+            [HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = $"{SecretsBasePath}/{{secretId}}")] HttpRequest req,
             Guid secretId,
             ILogger log)
         {
@@ -92,6 +87,47 @@ namespace SnapSecret.AzureFunctions
                 message = "Secret accessed, it will not be accesible anymore",
                 secret = secret?.Text
             });
+        }
+
+        private async Task<IActionResult> CreateSecretInternalAsync(
+            HttpRequest req,
+            CreateSecretRequest createSecretRequest,
+            ILogger log)
+        {
+            var secret = createSecretRequest.ToShareableTextSecret();
+
+            if (secret is null)
+            {
+                log.LogError($"Failed to convert {typeof(CreateSecretRequest)} request to {typeof(IShareableTextSecret)}");
+                return new StatusCodeResult(500);
+            }
+
+            var (secretId, error) = await _snapSecretBusinessLogic.SubmitSecretAsync(secret);
+
+            if (error != null)
+            {
+                return new ObjectResult(error.ToResponse())
+                {
+                    StatusCode = 500
+                };
+            }
+
+            if (req.Path.ToString().Contains("-slack"))
+            {
+                var path = req.Path.ToString().Replace("-slack", string.Empty);
+
+                return new OkObjectResult(new
+                {
+                    link = $"{req.Scheme}://{req.Host}{path}/{secretId}"
+                });
+            }
+            else
+            {
+                return new CreatedResult($"{req.Scheme}://{req.Host}{req.Path}/{secretId}", new
+                {
+                    message = "Successfully created secret"
+                });
+            }
         }
     }
 

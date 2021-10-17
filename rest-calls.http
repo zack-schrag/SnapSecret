@@ -1,5 +1,5 @@
-# @host = http://localhost:7071
-@host = https://snapsecretfunctionappproduction.azurewebsites.net
+@host = http://localhost:7071
+# @host = https://snapsecretfunctionappproduction.azurewebsites.net
 
 ###
 # @name CreateSecret
@@ -13,6 +13,16 @@ Content-Type: application/json
 
 ###
 @location = {{CreateSecret.response.headers.location}}
+
+###
+# @name SlackCreateSecret
+POST {{host}}/api/v1/secrets-slack
+Content-Type: application/x-www-form-urlencoded
+
+text=MySuperSecretPassword
+
+###
+@location = {{SlackCreateSecret.response.body.link}}
 
 ###
 POST {{location}}
