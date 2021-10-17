@@ -9,10 +9,10 @@ namespace SnapSecret.Domain
     public class SnapSecretError
     {
         private List<Exception> _exceptions;
-        private string _userMessage;
+        private string? _userMessage;
         private SnapSecretErrorType _errorType;
 
-        public string UserMessage => _userMessage;
+        public string? UserMessage => _userMessage;
         public SnapSecretErrorType ErrorType => _errorType;
 
         public SnapSecretError(SnapSecretErrorType errorType)

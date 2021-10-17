@@ -75,140 +75,6 @@ namespace SnapSecret.Infrastructure.Cli
             return outputKeyVaultUri;
         }
 
-        //private Dictionary<string, object?> CreateResources(string keyVaultUri)
-        //{
-        //    var resourceGroup = new ResourceGroup("ResourceGroup", new ResourceGroupArgs
-        //    {
-        //        ResourceGroupName = "SnapSecret",
-        //        Location = _settings.Location
-        //    });
-
-        //    var plan = new AppServicePlan("AppServicePlan", new AppServicePlanArgs()
-        //    {
-        //        ResourceGroupName = resourceGroup.Name,
-        //        Location = resourceGroup.Location,
-        //        Name = "SnapSecretAppServicePlan",
-        //        Reserved = true,
-        //        Sku = new SkuDescriptionArgs
-        //        {
-        //            Name = "Y1",
-        //            Tier = "Dynamic"
-        //        }
-        //    });
-
-        //    var storageAccount = new Storage.StorageAccount("StorageAccount", new Storage.StorageAccountArgs
-        //    {
-        //        ResourceGroupName = resourceGroup.Name,
-        //        AccountName = $"{_settings.ProjectName}{_settings.StackName}".ToLower(),
-        //        Location = resourceGroup.Location,
-        //        Sku = new Storage.Inputs.SkuArgs
-        //        {
-        //            Name = Storage.SkuName.Standard_LRS
-        //        },
-        //        Kind = Storage.Kind.StorageV2
-        //    });
-
-        //    var container = new Storage.BlobContainer("zips-container", new Storage.BlobContainerArgs
-        //    {
-        //        AccountName = storageAccount.Name,
-        //        PublicAccess = Storage.PublicAccess.None,
-        //        ResourceGroupName = resourceGroup.Name,
-        //    });
-
-        //    var currentDir = Directory.GetCurrentDirectory();
-
-        //    string prefix = "../";
-
-        //    if (currentDir.Contains("net6.0"))
-        //    {
-        //        prefix = "../../../../";
-        //    }
-
-        //    var blob = new Storage.Blob("zip", new Storage.BlobArgs
-        //    {
-        //        AccountName = storageAccount.Name,
-        //        ContainerName = container.Name,
-        //        ResourceGroupName = resourceGroup.Name,
-        //        Type = Storage.BlobType.Block,
-        //        Source = new FileArchive($"{prefix}SnapSecret.AzureFunctions/bin/Debug/net6.0")
-        //    });
-
-        //    var codeBlobUrl = SignedBlobReadUrl(blob, container, storageAccount, resourceGroup);
-
-        //    var appInsights = new Component("AppInsightsComponent", new ComponentArgs
-        //    {
-        //        Location = resourceGroup.Location,
-        //        ResourceGroupName = resourceGroup.Name,
-        //        ResourceName = "SnapSecretAppInsights",
-        //        ApplicationType = "web",
-        //        Kind = "web"
-        //    });
-
-        //    var siteConfig = new SiteConfigArgs
-        //    {
-        //        AppSettings = new List<NameValuePairArgs>
-        //            {
-        //                new NameValuePairArgs { Name = "FUNCTIONS_WORKER_RUNTIME", Value = "dotnet" },
-        //                new NameValuePairArgs { Name = "FUNCTIONS_EXTENSION_VERSION", Value = "~4" },
-        //                new NameValuePairArgs { Name = "AZURE_FUNCTIONS_ENVIRONMENT", Value = _settings.StackName },
-        //                new NameValuePairArgs { Name = "AzureWebJobsStorage", Value = GetConnectionString(resourceGroup.Name, storageAccount.Name) },
-        //                new NameValuePairArgs { Name = "APPLICATIONINSIGHTS_CONNECTION_STRING", Value = Output.Format($"InstrumentationKey={appInsights.InstrumentationKey}") },
-        //                new NameValuePairArgs { Name = "WEBSITE_RUN_FROM_PACKAGE", Value = codeBlobUrl },
-        //                new NameValuePairArgs { Name = "AzureKeyVaultSecretsProvider__KeyVaultUri", Value = keyVaultUri}
-        //            },
-        //        FtpsState = "FtpsOnly"
-        //    };
-
-        //    var app = new WebApp("WebApp", new WebAppArgs
-        //    {
-        //        Name = "SnapSecretFunctionApp",
-        //        Identity = new ManagedServiceIdentityArgs
-        //        {
-        //            Type = ManagedServiceIdentityType.SystemAssigned
-        //        },
-        //        Kind = "functionapp",
-        //        ResourceGroupName = resourceGroup.Name,
-        //        SiteConfig = siteConfig,
-        //        HttpsOnly = true,
-        //        ServerFarmId = plan.Id,
-        //        Location = resourceGroup.Location
-        //    });
-
-        //    var tenantId = app.Identity.Apply(func => func.TenantId);
-
-        //    var keyVault = new Vault("KeyVault", new VaultArgs
-        //    {
-        //        Location = resourceGroup.Location,
-        //        ResourceGroupName = resourceGroup.Name,
-        //        VaultName = "SnapSecretKeyVault",
-        //        Properties = new VaultPropertiesArgs
-        //        {
-        //            AccessPolicies = new[] {
-        //                    new AccessPolicyEntryArgs
-        //                    {
-        //                        ObjectId = app.Identity.Apply(func => func.PrincipalId),
-        //                        Permissions = new PermissionsArgs
-        //                        {
-        //                            Secrets = new List<Union<string, SecretPermissions>> { "get", "set", "delete", "purge" }
-        //                        },
-        //                        TenantId = tenantId
-        //                    }
-        //                },
-        //            Sku = new SkuArgs
-        //            {
-        //                Family = "A",
-        //                Name = SkuName.Standard
-        //            },
-        //            TenantId = tenantId,
-        //            EnableSoftDelete = true
-        //        }
-        //    });
-
-        //    return new Dictionary<string, object?>
-        //    {
-        //        { "KeyVaultUri", keyVault.Properties.Apply(p => p.VaultUri) }
-        //    };
-        //}
         private static Output<string> SignedBlobReadUrl(Storage.Blob blob, Storage.BlobContainer container, Storage.StorageAccount account, ResourceGroup resourceGroup)
         {
             return Output.Tuple(
@@ -261,11 +127,20 @@ namespace SnapSecret.Infrastructure.Cli
 
     public class AzureKeyVaultInfrastructureProviderSettings
     {
-        public string StackName { get; set; }
-        public string ProjectName { get; set; } = "SnapSecret";
-        //public string AzureClientId { get; set; }
-        //public string AzureClientSecret {  get; set; }
-        //public string AzureTenantId { get; set;  }
-        public string Location { get; set; }
+        public string StackName { get; }
+        public string ProjectName { get; }
+        public string Location { get; }
+
+        public AzureKeyVaultInfrastructureProviderSettings(string stackName, string location) :
+            this(stackName, location, "SnapSecret")
+        {
+        }
+
+        public AzureKeyVaultInfrastructureProviderSettings(string stackName, string location, string projectName)
+        {
+            StackName = stackName;
+            ProjectName = projectName;
+            Location = location;
+        }
     }
 }

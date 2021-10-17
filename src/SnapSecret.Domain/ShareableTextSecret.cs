@@ -23,7 +23,7 @@ namespace SnapSecret.Domain
             return this;
         }
 
-        public ShareableTextSecret WithPrompt(string prompt, string answer)
+        public ShareableTextSecret WithPrompt(string? prompt, string? answer)
         {
             Prompt = prompt;
             Answer = answer;

@@ -115,7 +115,7 @@ namespace SnapSecret.Infrastructure.Core
                 Location = resourceGroup.Location
             });
 
-            var tenantId = app.Identity.Apply(func => func.TenantId);
+            var tenantId = app.Identity.Apply(func => func?.TenantId ?? string.Empty);
 
             var keyVault = new Vault("KeyVault", new VaultArgs
             {
@@ -127,7 +127,7 @@ namespace SnapSecret.Infrastructure.Core
                     AccessPolicies = new[] {
                             new AccessPolicyEntryArgs
                             {
-                                ObjectId = app.Identity.Apply(func => func.PrincipalId),
+                                ObjectId = app.Identity.Apply(func => func?.PrincipalId ?? string.Empty),
                                 Permissions = new PermissionsArgs
                                 {
                                     Secrets = new List<Union<string, SecretPermissions>> { "get", "set", "delete", "purge" }

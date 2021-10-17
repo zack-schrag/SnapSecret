@@ -19,6 +19,12 @@ namespace SnapSecret.SecretsProviders.AzureKeyVault
             ILogger<AzureKeyVaultSecretsProvider> logger)
         {
             _configuration = configuration;
+
+            if (_configuration?.Value?.KeyVaultUri is null)
+            {
+                throw new ArgumentNullException(nameof(configuration));
+            }
+
             _logger = logger;
             _secretClient = new SecretClient(
                 vaultUri: new Uri(_configuration.Value.KeyVaultUri),

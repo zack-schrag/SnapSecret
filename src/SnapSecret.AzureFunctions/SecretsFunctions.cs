@@ -9,6 +9,7 @@ using Microsoft.Extensions.Logging;
 using SnapSecret.Application.Abstractions;
 using System.Text.Json;
 using SnapSecret.Domain;
+using System.ComponentModel.DataAnnotations;
 
 namespace SnapSecret.AzureFunctions
 {
@@ -31,15 +32,28 @@ namespace SnapSecret.AzureFunctions
             log.LogInformation("Creating new secret");
             log.LogInformation($"{req.Scheme}://{req.Host}{req.Path}/foo");
 
-            string name = req.Query["name"];
-
             string requestBody = await new StreamReader(req.Body).ReadToEndAsync();
+
             var createSecretRequest = JsonSerializer.Deserialize<CreateSecretRequest>(requestBody, new JsonSerializerOptions
             {
                 PropertyNamingPolicy = JsonNamingPolicy.CamelCase
             });
 
-            var (secretId, error) = await _snapSecretBusinessLogic.SubmitSecretAsync(createSecretRequest.ToShareableTextSecret());
+            if (createSecretRequest is null)
+            {
+                log.LogError($"Failed to deserialize request to {typeof(CreateSecretRequest)}");
+                return new StatusCodeResult(500);
+            }
+
+            var secret = createSecretRequest.ToShareableTextSecret();
+
+            if (secret is null)
+            {
+                log.LogError($"Failed to convert {typeof(CreateSecretRequest)} request to {typeof(IShareableTextSecret)}");
+                return new StatusCodeResult(500);
+            }
+
+            var (secretId, error) = await _snapSecretBusinessLogic.SubmitSecretAsync(secret);
 
             if (error != null)
             {
@@ -76,7 +90,7 @@ namespace SnapSecret.AzureFunctions
             return new OkObjectResult(new
             {
                 message = "Secret accessed, it will not be accesible anymore",
-                secret = secret.Text
+                secret = secret?.Text
             });
         }
     }
@@ -85,11 +99,19 @@ namespace SnapSecret.AzureFunctions
     {
         public string? Prompt { get; set; }
         public string? Answer { get; set; }
-        public string Text { get; set; }
+        
+        [Required]
+        public string? Text { get; set; }
+
         public TimeSpan ExpireIn { get; set; }
 
-        public IShareableTextSecret ToShareableTextSecret()
+        public IShareableTextSecret? ToShareableTextSecret()
         {
+            if (string.IsNullOrEmpty(Text))
+            {
+                return default;
+            }
+
             return new ShareableTextSecret(Text)
                 .WithPrompt(Prompt, Answer)
                 .WithExpireIn(ExpireIn);
