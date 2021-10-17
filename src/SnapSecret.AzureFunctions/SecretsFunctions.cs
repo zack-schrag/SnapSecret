@@ -118,7 +118,7 @@ namespace SnapSecret.AzureFunctions
 
                 return new OkObjectResult(new
                 {
-                    link = $"{req.Scheme}://{req.Host}{path}/{secretId}"
+                    text = $"{req.Scheme}://{req.Host}{path}/{secretId}"
                 });
             }
             else
