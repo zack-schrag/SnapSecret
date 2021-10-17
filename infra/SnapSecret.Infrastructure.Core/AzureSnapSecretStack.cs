@@ -49,7 +49,7 @@ namespace SnapSecret.Infrastructure.Core
                 Kind = Storage.Kind.StorageV2
             });
 
-            var container = new Storage.BlobContainer("zips-container", new Storage.BlobContainerArgs
+            var container = new Storage.BlobContainer("BlobContainer", new Storage.BlobContainerArgs
             {
                 AccountName = storageAccount.Name,
                 PublicAccess = Storage.PublicAccess.None,
@@ -58,14 +58,16 @@ namespace SnapSecret.Infrastructure.Core
 
             var currentDir = Directory.GetCurrentDirectory();
 
-            string prefix = "../";
+            Console.WriteLine(currentDir);
+
+            string prefix = "../../src/";
 
             if (currentDir.Contains("net6.0"))
             {
-                prefix = "../../../../";
+                prefix = "../../../../../src/";
             }
 
-            var blob = new Storage.Blob("zip", new Storage.BlobArgs
+            var blob = new Storage.Blob("Zip", new Storage.BlobArgs
             {
                 AccountName = storageAccount.Name,
                 ContainerName = container.Name,
@@ -115,7 +117,7 @@ namespace SnapSecret.Infrastructure.Core
                 Location = resourceGroup.Location
             });
 
-            var tenantId = app.Identity.Apply(func => func.TenantId);
+            var tenantId = app.Identity.Apply(func => func?.TenantId ?? string.Empty);
 
             var keyVault = new Vault("KeyVault", new VaultArgs
             {
@@ -127,7 +129,7 @@ namespace SnapSecret.Infrastructure.Core
                     AccessPolicies = new[] {
                             new AccessPolicyEntryArgs
                             {
-                                ObjectId = app.Identity.Apply(func => func.PrincipalId),
+                                ObjectId = app.Identity.Apply(func => func?.PrincipalId ?? string.Empty),
                                 Permissions = new PermissionsArgs
                                 {
                                     Secrets = new List<Union<string, SecretPermissions>> { "get", "set", "delete", "purge" }

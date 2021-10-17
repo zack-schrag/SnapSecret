@@ -2,7 +2,7 @@ using NetArchTest.Rules;
 using NetArchTest.Rules.Policies;
 using Xunit;
 
-namespace SnapSecret.Architecture.Tests
+namespace SnapSecret.Fitness.Tests
 {
     public class FitnessTests
     {

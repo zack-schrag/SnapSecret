@@ -24,7 +24,7 @@ jobs:
           stack-name: Production
           comment-on-pr: true
           upsert: true
-          work-dir: ./src/SnapSecret.Infrastructure.PulumiAzure
+          work-dir: ./infra/SnapSecret.Infrastructure.PulumiAzure
         env:
           ARM_CLIENT_ID: ${{ secrets.ARM_CLIENT_ID }}
           ARM_CLIENT_SECRET: ${{ secrets.ARM_CLIENT_SECRET }}

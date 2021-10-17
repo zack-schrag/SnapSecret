@@ -3,12 +3,7 @@ using SnapSecret.Infrastructure.Cli;
 
 Console.WriteLine("Hello, World!");
 
-var settings = new AzureKeyVaultInfrastructureProviderSettings
-{
-    ProjectName = "ZackDevSnapSecret",
-    StackName = "ZackDev",
-    Location = "WestUS"
-};
+var settings = new AzureKeyVaultInfrastructureProviderSettings("ZackDev", "WestUS", "ZackDevSnapSecret");
 
 var provider  = new AzureKeyVaultInfrastructureProvider(settings);
 
