@@ -1,4 +1,4 @@
-name: Preview Infrastructure
+name: Preview Azure Infrastructure
 on:
   pull_request:
     paths:
