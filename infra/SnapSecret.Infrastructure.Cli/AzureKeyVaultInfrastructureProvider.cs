@@ -1,17 +1,11 @@
 ﻿using Pulumi;
-using Pulumi.Automation;
-using Pulumi.AzureNative.Insights;
-using Pulumi.AzureNative.KeyVault;
-using Pulumi.AzureNative.KeyVault.Inputs;
 using Pulumi.AzureNative.Resources;
 using Storage = Pulumi.AzureNative.Storage;
-using Pulumi.AzureNative.Web;
-using ManagedServiceIdentityType = Pulumi.AzureNative.Web.ManagedServiceIdentityType;
-using Pulumi.AzureNative.Web.Inputs;
 using SnapSecret.Application.Abstractions;
 using SnapSecret.Infrastructure.Core;
+using Pulumi.Automation;
 
-namespace SnapSecret.SecretsProviders.AzureKeyVault
+namespace SnapSecret.Infrastructure.Cli
 {
     public class AzureKeyVaultInfrastructureProvider : ISecretsInfrastructureProvider
     {
@@ -68,7 +62,7 @@ namespace SnapSecret.SecretsProviders.AzureKeyVault
         {
             var program = GetProgram(keyVaultUri);
 
-            var stack = await GetStackAsync(program);            
+            var stack = await GetStackAsync(program);
 
             var upResult = await stack.UpAsync();
 
@@ -217,7 +211,7 @@ namespace SnapSecret.SecretsProviders.AzureKeyVault
         //}
         private static Output<string> SignedBlobReadUrl(Storage.Blob blob, Storage.BlobContainer container, Storage.StorageAccount account, ResourceGroup resourceGroup)
         {
-            return Output.Tuple<string, string, string, string>(
+            return Output.Tuple(
                 blob.Name, container.Name, account.Name, resourceGroup.Name).Apply(t =>
                 {
                     (string blobName, string containerName, string accountName, string resourceGroupName) = t;
@@ -244,7 +238,7 @@ namespace SnapSecret.SecretsProviders.AzureKeyVault
         private static Output<string> GetConnectionString(Input<string> resourceGroupName, Input<string> accountName)
         {
             // Retrieve the primary storage account key.
-            var storageAccountKeys = Output.All<string>(resourceGroupName, accountName).Apply(t =>
+            var storageAccountKeys = Output.All(resourceGroupName, accountName).Apply(t =>
             {
                 var resourceGroupName = t[0];
                 var accountName = t[1];

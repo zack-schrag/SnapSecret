@@ -1,5 +1,5 @@
 ﻿// See https://aka.ms/new-console-template for more information
-using SnapSecret.SecretsProviders.AzureKeyVault;
+using SnapSecret.Infrastructure.Cli;
 
 Console.WriteLine("Hello, World!");
 
