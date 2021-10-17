@@ -68,6 +68,7 @@ namespace SnapSecret.AzureFunctions
         [FunctionName("AccessSecret")]
         public async Task<IActionResult> AccessSecretAsync(
             [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = $"{SecretsBasePath}/{{secretId}}")] HttpRequest req,
+            ExecutionContext executionContext,
             Guid secretId,
             ILogger log)
         {
@@ -88,7 +89,8 @@ namespace SnapSecret.AzureFunctions
                 return new StatusCodeResult(500);
             }
 
-            var html = File.ReadAllText("secret.html").Replace("{{SECRET}}", secret.Text);
+            var path = Path.Combine(executionContext.FunctionDirectory, "../secret.html");
+            var html = File.ReadAllText(path).Replace("{{SECRET}}", secret.Text);
 
             return new ContentResult
             {
