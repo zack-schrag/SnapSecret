@@ -10,6 +10,7 @@ using SnapSecret.Application.Abstractions;
 using System.Text.Json;
 using SnapSecret.Domain;
 using System.ComponentModel.DataAnnotations;
+using System.Net;
 
 namespace SnapSecret.AzureFunctions
 {
@@ -66,7 +67,7 @@ namespace SnapSecret.AzureFunctions
 
         [FunctionName("AccessSecret")]
         public async Task<IActionResult> AccessSecretAsync(
-            [HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = $"{SecretsBasePath}/{{secretId}}")] HttpRequest req,
+            [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = $"{SecretsBasePath}/{{secretId}}")] HttpRequest req,
             Guid secretId,
             ILogger log)
         {
@@ -82,11 +83,19 @@ namespace SnapSecret.AzureFunctions
                 };
             }
 
-            return new OkObjectResult(new
+            if (secret is null)
             {
-                message = "Secret accessed, it will not be accesible anymore",
-                secret = secret?.Text
-            });
+                return new StatusCodeResult(500);
+            }
+
+            var html = File.ReadAllText("secret.html").Replace("{{SECRET}}", secret.Text);
+
+            return new ContentResult
+            {
+                Content = html,
+                ContentType = "text/html",
+                StatusCode = 200
+            };
         }
 
         private async Task<IActionResult> CreateSecretInternalAsync(

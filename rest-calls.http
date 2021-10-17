@@ -1,5 +1,5 @@
-# @host = http://localhost:7071
-@host = https://snapsecretfunctionappproduction.azurewebsites.net
+@host = http://localhost:7071
+# @host = https://snapsecretfunctionappproduction.azurewebsites.net
 
 ###
 # @name CreateSecret
@@ -25,4 +25,4 @@ text=MySuperSecretPassword
 @location = {{SlackCreateSecret.response.body.text}}
 
 ###
-POST {{location}}
+GET {{location}}
