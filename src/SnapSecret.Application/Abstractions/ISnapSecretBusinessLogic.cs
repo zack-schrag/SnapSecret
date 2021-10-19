@@ -4,7 +4,7 @@ namespace SnapSecret.Application.Abstractions
 {
     public interface ISnapSecretBusinessLogic
     {
-        Task<(Guid?, SnapSecretError?)> SubmitSecretAsync(IShareableTextSecret secret);
+        Task<(string?, SnapSecretError?)> SubmitSecretAsync(IShareableTextSecret secret);
         Task<(IShareableTextSecret?, SnapSecretError?)> AccessSecretAsync(Guid secretId);
     }
 }

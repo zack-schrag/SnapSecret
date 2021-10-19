@@ -20,8 +20,8 @@ namespace SnapSecret.Application.Tests
         public async Task ShouldBeAbleToSubmitASecret()
         {
             _mockSecretsProvider
-                .Setup(mock => mock.SubmitSecretAsync(It.IsAny<IShareableTextSecret>()))
-                .ReturnsAsync((Guid.NewGuid(), default));
+                .Setup(mock => mock.SetSecretAsync(It.IsAny<IShareableTextSecret>()))
+                .ReturnsAsync((Guid.NewGuid().ToString(), default));
 
             var service = new SnapSecretBusinessLogic(_mockSecretsProvider.Object);
 
@@ -41,7 +41,7 @@ namespace SnapSecret.Application.Tests
                 .WithUserMessage(userMessage);
 
             _mockSecretsProvider
-                .Setup(mock => mock.SubmitSecretAsync(It.IsAny<IShareableTextSecret>()))
+                .Setup(mock => mock.SetSecretAsync(It.IsAny<IShareableTextSecret>()))
                 .ReturnsAsync((default, error));
 
             var service = new SnapSecretBusinessLogic(_mockSecretsProvider.Object);
@@ -61,11 +61,11 @@ namespace SnapSecret.Application.Tests
             var secretId = Guid.NewGuid();
 
             _mockSecretsProvider
-                .Setup(mock => mock.GetSecretAsync(secretId))
+                .Setup(mock => mock.GetSecretAsync(secretId.ToString()))
                 .ReturnsAsync((expectedSecret, default));
 
             _mockSecretsProvider
-                .Setup(mock => mock.ExpireSecretAsync(secretId))
+                .Setup(mock => mock.ExpireSecretAsync(secretId.ToString()))
                 .ReturnsAsync(default(SnapSecretError));
 
             var service = new SnapSecretBusinessLogic(_mockSecretsProvider.Object);
@@ -76,8 +76,8 @@ namespace SnapSecret.Application.Tests
             Assert.Null(result.Item2);
             Assert.Equal(result.Item1?.Text, expectedSecret.Text);
 
-            _mockSecretsProvider.Verify(mock => mock.GetSecretAsync(secretId), Times.Once);
-            _mockSecretsProvider.Verify(mock => mock.ExpireSecretAsync(secretId), Times.Once);
+            _mockSecretsProvider.Verify(mock => mock.GetSecretAsync(secretId.ToString()), Times.Once);
+            _mockSecretsProvider.Verify(mock => mock.ExpireSecretAsync(secretId.ToString()), Times.Once);
         }
 
         [Fact]
@@ -90,7 +90,7 @@ namespace SnapSecret.Application.Tests
                 .WithUserMessage(userMessage);
 
             _mockSecretsProvider
-                .Setup(mock => mock.GetSecretAsync(It.IsAny<Guid>()))
+                .Setup(mock => mock.GetSecretAsync(It.IsAny<string>()))
                 .ReturnsAsync((default, error));
 
             var service = new SnapSecretBusinessLogic(_mockSecretsProvider.Object);
@@ -102,8 +102,8 @@ namespace SnapSecret.Application.Tests
             Assert.Equal(result.Item2?.UserMessage, userMessage);
             Assert.Equal(result.Item2?.ErrorType, errorType);
 
-            _mockSecretsProvider.Verify(mock => mock.GetSecretAsync(It.IsAny<Guid>()), Times.Once);
-            _mockSecretsProvider.Verify(mock => mock.ExpireSecretAsync(It.IsAny<Guid>()), Times.Never);
+            _mockSecretsProvider.Verify(mock => mock.GetSecretAsync(It.IsAny<string>()), Times.Once);
+            _mockSecretsProvider.Verify(mock => mock.ExpireSecretAsync(It.IsAny<string>()), Times.Never);
         }
 
         [Fact]
@@ -119,11 +119,11 @@ namespace SnapSecret.Application.Tests
                 .WithUserMessage(userMessage);
 
             _mockSecretsProvider
-                .Setup(mock => mock.GetSecretAsync(secretId))
+                .Setup(mock => mock.GetSecretAsync(secretId.ToString()))
                 .ReturnsAsync((expectedSecret, default));
 
             _mockSecretsProvider
-                .Setup(mock => mock.ExpireSecretAsync(secretId))
+                .Setup(mock => mock.ExpireSecretAsync(secretId.ToString()))
                 .ReturnsAsync(error);
 
             var service = new SnapSecretBusinessLogic(_mockSecretsProvider.Object);
@@ -135,8 +135,8 @@ namespace SnapSecret.Application.Tests
             Assert.Equal(result.Item2?.UserMessage, userMessage);
             Assert.Equal(result.Item2?.ErrorType, errorType);
 
-            _mockSecretsProvider.Verify(mock => mock.GetSecretAsync(It.IsAny<Guid>()), Times.Once);
-            _mockSecretsProvider.Verify(mock => mock.ExpireSecretAsync(It.IsAny<Guid>()), Times.Once);
+            _mockSecretsProvider.Verify(mock => mock.GetSecretAsync(It.IsAny<string>()), Times.Once);
+            _mockSecretsProvider.Verify(mock => mock.ExpireSecretAsync(It.IsAny<string>()), Times.Once);
         }
     }
 }

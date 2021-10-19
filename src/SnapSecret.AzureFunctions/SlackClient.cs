@@ -1,0 +1,44 @@
+﻿using RestSharp;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace SnapSecret.AzureFunctions
+{
+    public class SlackNotifier
+    {
+        private static readonly string SlackPostMessageUrl = "https://slack.com/api/chat.postMessage";
+
+        private readonly string _accessToken;
+        private readonly string _channelId;
+
+        public SlackNotifier(string accessToken, string channelId)
+        {
+            _accessToken = accessToken;
+            _channelId = channelId;
+        }
+
+        public async Task SendMessageAsync(string message)
+        {
+            var client = new RestClient(SlackPostMessageUrl);
+
+            IRestRequest request = new RestRequest(Method.POST)
+                .AddHeader("Authorization", $"Bearer {_accessToken}")
+                .AddHeader("Content-Type", "application/json")
+                .AddJsonBody(new
+                {
+                    channel = _channelId,
+                    text = message
+                });
+
+            await client.ExecuteAsync<SlackResponse>(request);
+        }
+    }
+
+    public class SlackResponse
+    {
+        public bool Ok { get; set; }
+    }
+}

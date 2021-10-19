@@ -4,8 +4,8 @@ namespace SnapSecret.Application
 {
     public interface ISecretsProvider
     {
-        Task<(Guid?, SnapSecretError?)> SubmitSecretAsync(IShareableTextSecret secret);
-        Task<(IShareableTextSecret?, SnapSecretError?)> GetSecretAsync(Guid secretId);
-        Task<SnapSecretError?> ExpireSecretAsync(Guid secretId);
+        Task<(string?, SnapSecretError?)> SetSecretAsync(IShareableTextSecret secret);
+        Task<(IShareableTextSecret?, SnapSecretError?)> GetSecretAsync(string secretId);
+        Task<SnapSecretError?> ExpireSecretAsync(string secretId);
     }
 }

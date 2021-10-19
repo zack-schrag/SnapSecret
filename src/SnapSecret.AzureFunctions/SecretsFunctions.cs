@@ -51,6 +51,7 @@ namespace SnapSecret.AzureFunctions
         [FunctionName("SlackCreateSecret")]
         public async Task<IActionResult> SlackCreateSecretAsync(
             [HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = $"{SecretsBasePath}-slack")] HttpRequest req,
+            [Queue("slack-create-secret")] IAsyncCollector<CreateSecretRequest> slackQueue,
             ILogger log)
         {
             log.LogInformation("Creating new secret");
@@ -59,10 +60,21 @@ namespace SnapSecret.AzureFunctions
 
             var createSecretRequest = new CreateSecretRequest
             {
-                Text = formCollection["text"]
+                Text = formCollection["text"],
+                BaseSecretsPath = $"{req.Scheme}://{req.Host}/api/v1/secrets/",
+                SlackChannelId = formCollection["channel_id"],
+                SlackTeamId = formCollection["team_id"]
             };
 
-            return await CreateSecretInternalAsync(req, createSecretRequest, log);
+            await slackQueue.AddAsync(createSecretRequest);
+
+            return new OkObjectResult(new
+            {
+                replace_original = true,
+                text = "We received your request and we're working on it..."
+            });
+
+            //return await CreateSecretInternalAsync(req, createSecretRequest, log);
         }
 
         [FunctionName("AccessSecret")]
@@ -143,6 +155,7 @@ namespace SnapSecret.AzureFunctions
         }
     }
 
+    // TODO - abstract away the Slack specific pieces
     public class CreateSecretRequest
     {
         public string? Prompt { get; set; }
@@ -152,6 +165,12 @@ namespace SnapSecret.AzureFunctions
         public string? Text { get; set; }
 
         public TimeSpan ExpireIn { get; set; }
+
+        public string? BaseSecretsPath { get; set; }
+
+        public string? SlackChannelId { get; set; }
+
+        public string? SlackTeamId { get; set; }
 
         public IShareableTextSecret? ToShareableTextSecret()
         {

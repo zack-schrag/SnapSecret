@@ -5,16 +5,24 @@ namespace SnapSecret.Domain
 
     public class ShareableTextSecret : IShareableTextSecret
     {
+        public string Id { get; private set; }
         public string? Prompt { get; private set; }
         public string? Answer { get; private set; }
         public string Text { get; }
 
-        public TimeSpan ExpireIn { get; private set; }
+        public TimeSpan? ExpireIn { get; private set; }
 
         public ShareableTextSecret(string text)
         {
             Text = text;
             ExpireIn = TimeSpan.FromHours(1);
+            Id = Guid.NewGuid().ToString();
+        }
+
+        public ShareableTextSecret WithId(string id)
+        {
+            Id = id;
+            return this;
         }
 
         public ShareableTextSecret WithExpireIn(TimeSpan timeSpan)

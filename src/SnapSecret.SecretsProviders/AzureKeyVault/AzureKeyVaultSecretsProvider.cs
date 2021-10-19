@@ -31,7 +31,7 @@ namespace SnapSecret.SecretsProviders.AzureKeyVault
                 credential: new DefaultAzureCredential());
         }
 
-        public async Task<SnapSecretError?> ExpireSecretAsync(Guid secretId)
+        public async Task<SnapSecretError?> ExpireSecretAsync(string secretId)
         {
             try
             {
@@ -63,7 +63,7 @@ namespace SnapSecret.SecretsProviders.AzureKeyVault
             return default;
         }
 
-        public async Task<(IShareableTextSecret?, SnapSecretError?)> GetSecretAsync(Guid secretId)
+        public async Task<(IShareableTextSecret?, SnapSecretError?)> GetSecretAsync(string secretId)
         {
             try
             {
@@ -87,9 +87,9 @@ namespace SnapSecret.SecretsProviders.AzureKeyVault
             }
         }
 
-        public async Task<(Guid?, SnapSecretError?)> SubmitSecretAsync(IShareableTextSecret secret)
+        public async Task<(string?, SnapSecretError?)> SetSecretAsync(IShareableTextSecret secret)
         {
-            var secretId = Guid.NewGuid();
+            var secretId = secret.Id;
             var secretName = Convert.ToString(secretId);
 
             try

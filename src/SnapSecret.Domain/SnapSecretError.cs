@@ -12,6 +12,7 @@ namespace SnapSecret.Domain
         private string? _userMessage;
         private SnapSecretErrorType _errorType;
 
+        public IReadOnlyCollection<Exception> Exceptions => _exceptions;
         public string? UserMessage => _userMessage;
         public SnapSecretErrorType ErrorType => _errorType;
 

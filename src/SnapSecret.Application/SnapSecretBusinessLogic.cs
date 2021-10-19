@@ -14,7 +14,9 @@ namespace SnapSecret.Application
 
         public async Task<(IShareableTextSecret?, SnapSecretError?)> AccessSecretAsync(Guid secretId)
         {
-            var (secret, getError) = await _secretsProvider.GetSecretAsync(secretId);
+            var secretIdAsString = secretId.ToString();
+
+            var (secret, getError) = await _secretsProvider.GetSecretAsync(secretIdAsString);
 
             if (getError != null)
             {
@@ -24,7 +26,7 @@ namespace SnapSecret.Application
                 );
             }
 
-            var expireError = await _secretsProvider.ExpireSecretAsync(secretId);
+            var expireError = await _secretsProvider.ExpireSecretAsync(secretIdAsString);
 
             if (expireError != null)
             {
@@ -40,9 +42,9 @@ namespace SnapSecret.Application
             );
         }
 
-        public Task<(Guid?, SnapSecretError?)> SubmitSecretAsync(IShareableTextSecret secret)
+        public Task<(string?, SnapSecretError?)> SubmitSecretAsync(IShareableTextSecret secret)
         {
-            return _secretsProvider.SubmitSecretAsync(secret);
+            return _secretsProvider.SetSecretAsync(secret);
         }
     }
 }
