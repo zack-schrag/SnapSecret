@@ -17,6 +17,9 @@ namespace SnapSecret.Infrastructure.Core
             var stackName = Pulumi.Deployment.Instance.StackName;
             var location = new Config("azure-native").Require("location");
             var keyVaultUri = new Config("SnapSecret").Require("KeyVaultUri");
+            var slackClientId = new Config("SnapSecret").Require("SlackClientId");
+            var slackClientSecret = new Config("SnapSecret").Require("SlackClientSecret");
+            var slackRedirectUri = new Config("SnapSecret").Require("SlackRedirectUri");
 
             var resourceGroup = new ResourceGroup("ResourceGroup", new ResourceGroupArgs
             {
@@ -97,7 +100,10 @@ namespace SnapSecret.Infrastructure.Core
                         new NameValuePairArgs { Name = "AzureWebJobsStorage", Value = GetConnectionString(resourceGroup.Name, storageAccount.Name) },
                         new NameValuePairArgs { Name = "APPINSIGHTS_INSTRUMENTATIONKEY", Value = appInsights.InstrumentationKey },
                         new NameValuePairArgs { Name = "WEBSITE_RUN_FROM_PACKAGE", Value = codeBlobUrl },
-                        new NameValuePairArgs { Name = "AzureKeyVaultSecretsProvider__KeyVaultUri", Value = keyVaultUri}
+                        new NameValuePairArgs { Name = "AzureKeyVaultSecretsProvider__KeyVaultUri", Value = keyVaultUri },
+                        new NameValuePairArgs { Name = "Slack__ClientId", Value = slackClientId },
+                        new NameValuePairArgs { Name = "Slack__ClientSecret", Value = slackClientSecret },
+                        new NameValuePairArgs { Name = "Slack__RedirectUri", Value = slackRedirectUri }
                     },
                 FtpsState = "FtpsOnly"
             };

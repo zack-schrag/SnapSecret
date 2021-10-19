@@ -18,6 +18,9 @@ namespace SnapSecret.AzureFunctions
             builder.Services
                 .AddTransient<ISnapSecretBusinessLogic, SnapSecretBusinessLogic>()
                 .AddAzureKeyVaultProvider(configuration);
+
+            builder.Services
+                .Configure<SlackConfiguration>(configuration.GetSection(SlackConfiguration.Section));
         }
     }
 }
