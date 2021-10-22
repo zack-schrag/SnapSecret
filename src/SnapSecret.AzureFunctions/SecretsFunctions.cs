@@ -156,6 +156,22 @@ namespace SnapSecret.AzureFunctions
     }
 
     // TODO - abstract away the Slack specific pieces
+    public class CreateSecretRequestDto
+    {
+        public string? Prompt { get; set; }
+        public string? Answer { get; set; }
+
+        public string? Text { get; set; }
+
+        public string? ExpireIn { get; set; }
+
+        public string? BaseSecretsPath { get; set; }
+
+        public string? SlackChannelId { get; set; }
+
+        public string? SlackTeamId { get; set; }
+    }
+
     public class CreateSecretRequest
     {
         public string? Prompt { get; set; }
@@ -164,7 +180,7 @@ namespace SnapSecret.AzureFunctions
         [Required]
         public string? Text { get; set; }
 
-        public TimeSpan ExpireIn { get; set; }
+        public TimeSpan? ExpireIn { get; set; }
 
         public string? BaseSecretsPath { get; set; }
 
@@ -179,9 +195,44 @@ namespace SnapSecret.AzureFunctions
                 return default;
             }
 
-            return new ShareableTextSecret(Text)
-                .WithPrompt(Prompt, Answer)
-                .WithExpireIn(ExpireIn);
+            var secret = new ShareableTextSecret(Text)
+                .WithPrompt(Prompt, Answer);
+
+            if (ExpireIn != null)
+            {
+                secret.WithExpireIn(ExpireIn.Value);
+            }
+
+            return secret;
+                
+        }
+
+        public CreateSecretRequestDto ToDto()
+        {
+            return new CreateSecretRequestDto
+            {
+                Answer = Answer,
+                BaseSecretsPath = BaseSecretsPath,
+                ExpireIn = ExpireIn.ToString(),
+                Prompt = Prompt,
+                SlackChannelId = SlackChannelId,
+                SlackTeamId = SlackTeamId,
+                Text = Text
+            };
+        }
+
+        public static CreateSecretRequest FromDto(CreateSecretRequestDto dto)
+        {
+            return new CreateSecretRequest
+            {
+                Answer = dto.Answer,
+                BaseSecretsPath = dto.BaseSecretsPath,
+                ExpireIn = TimeSpan.Parse(dto.ExpireIn),
+                Prompt = dto.Prompt,
+                SlackChannelId = dto.SlackChannelId,
+                SlackTeamId = dto.SlackTeamId,
+                Text = dto.Text
+            };
         }
     }
 }
