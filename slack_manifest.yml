@@ -1,0 +1,31 @@
+_metadata:
+  major_version: 1
+  minor_version: 1
+display_information:
+  name: Snap Secret
+  description: Conveniently and securely share secrets in Slack
+  background_color: "#065fc4"
+features:
+  bot_user:
+    display_name: SnapSecret
+    always_online: true
+  slash_commands:
+    - command: /secret
+      url: https://snapsecretfunctionappproduction.azurewebsites.net/api/v1/secrets-slack
+      description: Creates a secret
+      should_escape: true
+oauth_config:
+  redirect_urls:
+    - https://snapsecretfunctionappproduction.azurewebsites.net/api/oauth2/slack
+  scopes:
+    bot:
+      - channels:read
+      - chat:write
+      - commands
+      - chat:write.public
+      - groups:read
+      - groups:write
+settings:
+  org_deploy_enabled: false
+  socket_mode_enabled: false
+  token_rotation_enabled: false
