@@ -9,6 +9,7 @@ namespace SnapSecret.Domain
     public enum SnapSecretErrorType
     {
         Unknown,
-        ProviderRequestError
+        ProviderRequestError,
+        SecretExpiredOrNotFound
     }
 }

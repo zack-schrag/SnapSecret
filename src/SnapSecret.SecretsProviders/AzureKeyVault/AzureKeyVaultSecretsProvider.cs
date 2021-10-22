@@ -69,6 +69,19 @@ namespace SnapSecret.SecretsProviders.AzureKeyVault
             {
                 var secret = await _secretClient.GetSecretAsync(Convert.ToString(secretId));
 
+                var expiresOn = secret.Value.Properties.ExpiresOn ?? DateTimeOffset.UtcNow.AddYears(9999);
+
+                if (expiresOn < DateTimeOffset.UtcNow)
+                {
+                    _logger.LogError("Failed to get secret {SecretId} using provider {Provider}. Secret is expired", secretId, GetType());
+
+                    return (
+                        default,
+                        new SnapSecretError(SnapSecretErrorType.SecretExpiredOrNotFound)
+                        .WithUserMessage($"Failed to get secret {secretId}. Secret is either expired or does not exist.")
+                    );
+                }
+
                 return (
                     new ShareableTextSecret(secret.Value.Value),
                     default
