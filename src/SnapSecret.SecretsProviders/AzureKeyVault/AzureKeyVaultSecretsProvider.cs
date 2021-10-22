@@ -71,7 +71,7 @@ namespace SnapSecret.SecretsProviders.AzureKeyVault
 
                 var expiresOn = secret.Value.Properties.ExpiresOn ?? DateTimeOffset.UtcNow.AddYears(9999);
 
-                if (expiresOn < DateTimeOffset.UtcNow)
+                if (expiresOn.CompareTo(DateTimeOffset.UtcNow) < 0)
                 {
                     _logger.LogError("Failed to get secret {SecretId} using provider {Provider}. Secret is expired", secretId, GetType());
 
