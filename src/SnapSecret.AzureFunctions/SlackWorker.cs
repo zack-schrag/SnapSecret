@@ -70,9 +70,9 @@ namespace SnapSecret.AzureFunctions
                 throw new Exception($"Failed to retrieve Slack access token for team id {createSecretRequest.SlackTeamId}");
             }
 
-            var notifier = new SlackNotifier(slackAccessToken.Text, createSecretRequest.SlackChannelId);
+            var slackClient = new SlackClient(slackAccessToken.Text, createSecretRequest.SlackChannelId);
 
-            await notifier.SendMessageAsync($"{createSecretRequest.BaseSecretsPath}{secretId}");
+            await slackClient.SendMessageAsync($"{createSecretRequest.BaseSecretsPath}{secretId}");
         }
     }
 }

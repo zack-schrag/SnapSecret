@@ -7,14 +7,14 @@ using System.Threading.Tasks;
 
 namespace SnapSecret.AzureFunctions
 {
-    public class SlackNotifier
+    public class SlackClient
     {
         private static readonly string SlackPostMessageUrl = "https://slack.com/api/chat.postMessage";
 
         private readonly string _accessToken;
         private readonly string _channelId;
 
-        public SlackNotifier(string accessToken, string channelId)
+        public SlackClient(string accessToken, string channelId)
         {
             _accessToken = accessToken;
             _channelId = channelId;
