@@ -33,7 +33,12 @@ namespace SnapSecret.AzureFunctions
                     text = message
                 });
 
-            await client.ExecuteAsync<SlackResponse>(request);
+            var response = await client.ExecuteAsync<SlackResponse>(request);
+
+            if (!response.IsSuccessful || !response.Data.Ok)
+            {
+                throw new Exception($"Failed to send Slack message: {response.Content}");
+            }
         }
     }
 
