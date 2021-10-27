@@ -73,8 +73,6 @@ namespace SnapSecret.AzureFunctions
                 replace_original = true,
                 text = "We received your request and we're working on it..."
             });
-
-            //return await CreateSecretInternalAsync(req, createSecretRequest, log);
         }
 
         [FunctionName("AccessSecret")]
