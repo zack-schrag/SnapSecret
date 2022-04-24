@@ -3,7 +3,7 @@ on:
   push:
     branches: [ 'main' ]
 jobs:
-  preview:
+  deploy:
     name: Deploy
     environment: Production
     runs-on: ubuntu-latest
