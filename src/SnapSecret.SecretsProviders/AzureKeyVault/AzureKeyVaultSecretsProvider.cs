@@ -89,7 +89,7 @@ namespace SnapSecret.SecretsProviders.AzureKeyVault
             }
             catch (RequestFailedException e)
             {
-                _logger.LogError(e, "Failed to get secret {SecretId} using provider {Provider}.", secretId, GetType());
+                _logger.LogError(e, "Failed to get secret {SecretId} using provider {Provider}. Reason: {Exception}", secretId, GetType(), e.Message);
 
                 return (
                     default,
