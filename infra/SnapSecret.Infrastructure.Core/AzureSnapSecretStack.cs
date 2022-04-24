@@ -61,14 +61,20 @@ namespace SnapSecret.Infrastructure.Core
 
             var currentDir = Directory.GetCurrentDirectory();
 
-            Console.WriteLine(currentDir);
+            Console.WriteLine($"Current working directory: {currentDir}");
 
-            string prefix = "../../src/";
+            string prefix = Path.Combine("..", "..", "src");
 
             if (currentDir.Contains("net6.0"))
             {
-                prefix = "../../../../../src/";
+                prefix = Path.Combine("..", "..", "..", "..", "..", "src");
             }
+
+            var filePath = Path.Combine(prefix, "SnapSecret.AzureFunctions", "bin", "Release", "net6.0");
+
+            Console.WriteLine($"File path: {filePath}");
+
+            var fileArchive = new FileArchive(filePath);
 
             var blob = new Storage.Blob("zip", new Storage.BlobArgs
             {
@@ -76,7 +82,7 @@ namespace SnapSecret.Infrastructure.Core
                 ContainerName = container.Name,
                 ResourceGroupName = resourceGroup.Name,
                 Type = Storage.BlobType.Block,
-                Source = new FileArchive($"{prefix}SnapSecret.AzureFunctions/bin/Release/net6.0")
+                Source = fileArchive
             });
 
             var codeBlobUrl = SignedBlobReadUrl(blob, container, storageAccount, resourceGroup);

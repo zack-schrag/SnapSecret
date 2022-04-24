@@ -4,7 +4,7 @@ on:
     branches: [ 'main' ]
 jobs:
   deploy:
-    name: Deploy
+    name: Production
     environment: Production
     runs-on: ubuntu-latest
     steps:
