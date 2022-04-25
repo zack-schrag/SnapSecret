@@ -76,7 +76,14 @@ namespace SnapSecret.AzureFunctions
 
             var slackClient = new SlackClient(slackAccessToken.Text, createSecretRequest.SlackChannelId);
 
-            await slackClient.SendMessageAsync($"{createSecretRequest.BaseSecretsPath}{secretId}");
+            try
+            {
+                await slackClient.SendMessageAsync($"{createSecretRequest.BaseSecretsPath}{secretId}");
+            }
+            catch (Exception e)
+            {
+                log.LogError(e, "Failed to send slack message: {Message}", e.Message);
+            }
         }
     }
 }
