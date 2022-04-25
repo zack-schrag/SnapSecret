@@ -1,7 +1,7 @@
 config:
-  SnapSecret:KeyVaultUri: https://snapsecretkeyvaultproduc.vault.azure.net/
+  SnapSecret:KeyVaultUri: https://kv-snap-prod-9.vault.azure.net/
   SnapSecret:SlackClientId: "710334160950.2613232792434"
   SnapSecret:SlackClientSecret:
     secure: AAABAGkA1jBtp+QVAyqN8Jap2il9d/bSgsnmS4J8jHWQzxvrvbpQme6vR/e75rGqW/cpp5D5+cHJpcIzjW5MVg==
-  SnapSecret:SlackRedirectUri: https://snapsecretfunctionappproduction.azurewebsites.net/api/oauth2/slack
+  SnapSecret:SlackRedirectUri: https://function-snap-prod.azurewebsites.net/api/oauth2/slack
   azure-native:location: WestUS

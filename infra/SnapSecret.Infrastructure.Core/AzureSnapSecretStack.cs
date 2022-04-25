@@ -7,14 +7,21 @@ using Storage = Pulumi.AzureNative.Storage;
 using Pulumi.AzureNative.Web;
 using ManagedServiceIdentityType = Pulumi.AzureNative.Web.ManagedServiceIdentityType;
 using Pulumi.AzureNative.Web.Inputs;
+using Pulumi.Random;
 
 namespace SnapSecret.Infrastructure.Core
 {
     public class AzureSnapSecretStack : Stack
     {
+        private static readonly Dictionary<string, string> StackNameCleaned = new Dictionary<string, string>
+        {
+            { "Production", "prod" }
+        };
+
         public AzureSnapSecretStack()
         {
             var stackName = Pulumi.Deployment.Instance.StackName;
+            var stackNameCleaned = StackNameCleaned.GetValueOrDefault(stackName) ?? stackName.ToLowerInvariant().Substring(0, 3);
             var location = new Config("azure-native").Require("location");
             var keyVaultUri = new Config("SnapSecret").Require("KeyVaultUri");
             var slackClientId = new Config("SnapSecret").Require("SlackClientId");
@@ -23,7 +30,7 @@ namespace SnapSecret.Infrastructure.Core
 
             var resourceGroup = new ResourceGroup("ResourceGroup", new ResourceGroupArgs
             {
-                ResourceGroupName = $"SnapSecret{stackName}",
+                ResourceGroupName = $"rg-snap-{stackNameCleaned}",
                 Location = location
             });
 
@@ -31,7 +38,7 @@ namespace SnapSecret.Infrastructure.Core
             {
                 ResourceGroupName = resourceGroup.Name,
                 Location = resourceGroup.Location,
-                Name = $"SnapSecretAppServicePlan{stackName}",
+                Name = $"app-svc-plan-snap-{stackNameCleaned}",
                 Reserved = true,
                 Sku = new SkuDescriptionArgs
                 {
@@ -43,7 +50,7 @@ namespace SnapSecret.Infrastructure.Core
             var storageAccount = new Storage.StorageAccount("StorageAccount", new Storage.StorageAccountArgs
             {
                 ResourceGroupName = resourceGroup.Name,
-                AccountName = $"snapsecret{stackName}".ToLower(),
+                AccountName = $"sasnap{stackNameCleaned}".ToLower(),
                 Location = resourceGroup.Location,
                 Sku = new Storage.Inputs.SkuArgs
                 {
@@ -91,7 +98,7 @@ namespace SnapSecret.Infrastructure.Core
             {
                 Location = resourceGroup.Location,
                 ResourceGroupName = resourceGroup.Name,
-                ResourceName = $"SnapSecretAppInsights{stackName}",
+                ResourceName = $"app-insights-snap-{stackNameCleaned}",
                 ApplicationType = "web",
                 Kind = "web"
             });
@@ -116,7 +123,7 @@ namespace SnapSecret.Infrastructure.Core
 
             var app = new WebApp("WebApp", new WebAppArgs
             {
-                Name = $"SnapSecretFunctionApp{stackName}",
+                Name = $"function-snap-{stackNameCleaned}",
                 Identity = new ManagedServiceIdentityArgs
                 {
                     Type = ManagedServiceIdentityType.SystemAssigned
@@ -131,11 +138,19 @@ namespace SnapSecret.Infrastructure.Core
 
             var tenantId = app.Identity.Apply(func => func?.TenantId ?? string.Empty);
 
+            var keyVaultNamePrefix = $"kv-snap-{stackNameCleaned}-";
+
+            var randomKeyVaultName = new RandomId("KeyVaultRandomId", new RandomIdArgs
+            {
+                Prefix = keyVaultNamePrefix,
+                ByteLength = 1
+            });
+
             var keyVault = new Vault("KeyVault", new VaultArgs
             {
                 Location = resourceGroup.Location,
                 ResourceGroupName = resourceGroup.Name,
-                VaultName = $"SnapSecretKeyVault{stackName}".Substring(0, 24),
+                VaultName = randomKeyVaultName.Dec,
                 Properties = new VaultPropertiesArgs
                 {
                     AccessPolicies = new[] {
