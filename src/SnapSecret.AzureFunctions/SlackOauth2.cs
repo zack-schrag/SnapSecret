@@ -60,7 +60,8 @@ namespace SnapSecret.AzureFunctions
             }
 
             var secret = new ShareableTextSecret(oauth2Response.Data.AccessToken)
-                .WithId(oauth2Response.Data.Team.Id);
+                .WithId(oauth2Response.Data.Team.Id)
+                .WithExpireIn(TimeSpan.FromDays(365 * 100));
 
             var (secretId, error) = await _secretsProvider.SetSecretAsync(secret);
 
