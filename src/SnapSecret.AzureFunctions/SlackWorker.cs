@@ -26,7 +26,9 @@ namespace SnapSecret.AzureFunctions
             [QueueTrigger("slack-create-secret")] CreateSecretRequest createSecretRequest,
             ILogger log)
         {
-            log.LogInformation("Received request to create secret. Slack Channel ID: {SlackChannelId}", createSecretRequest.SlackChannelId);
+            log.LogInformation("Received request to create secret. Slack Channel ID: {SlackChannelId}. Team ID: {TeamId}", 
+                createSecretRequest.SlackChannelId,
+                createSecretRequest.SlackTeamId);
 
             if (string.IsNullOrEmpty(createSecretRequest.SlackChannelId))
             {
