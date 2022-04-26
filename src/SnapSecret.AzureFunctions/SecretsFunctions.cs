@@ -77,7 +77,7 @@ namespace SnapSecret.AzureFunctions
 
         [FunctionName("AccessSecret")]
         public async Task<IActionResult> AccessSecretAsync(
-            [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "v1/secrets/{{secretId}}")] HttpRequest req,
+            [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "v1/secrets/{secretId}")] HttpRequest req,
             ExecutionContext executionContext,
             Guid secretId,
             ILogger log)
