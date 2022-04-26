@@ -106,10 +106,13 @@ namespace SnapSecret.Infrastructure.Core
             var keyVaultUriOutput = stackReference.GetOutput("KeyVaultUri");
             var slackRedirectUriOutput = stackReference.GetOutput("AppHostname");
 
-            if (keyVaultUriOutput is null || slackRedirectUriOutput is null)
+            NeedsRerun = Output.Tuple(keyVaultUriOutput, slackRedirectUriOutput).Apply(t =>
             {
-                NeedsRerun = Output.Create(true);
-            }
+                var kvUri = t.Item1 as string;
+                var slackUri = t.Item2 as string;
+
+                return Output.Create(string.IsNullOrEmpty(kvUri) || string.IsNullOrEmpty(slackUri));
+            });
 
             var keyVaultUri = keyVaultUriOutput?.Apply(s => $"{s}");
             var slackRedirectUri = slackRedirectUriOutput?.Apply(s => $"https://{s}/api/oauth2/slack");
