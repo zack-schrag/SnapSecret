@@ -13,7 +13,7 @@ jobs:
         with:
           dotnet-version: '6.0'   
       - run: dotnet build -c Release
-      - run: dotnet test --no-build --verbosity normal
+      - run: dotnet test -c Release --no-build --verbosity normal
       - uses: pulumi/actions@v3
         id: pulumi_up
         with:
