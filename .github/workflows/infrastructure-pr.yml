@@ -12,8 +12,7 @@ jobs:
       - uses: actions/checkout@v2
       - uses: actions/setup-dotnet@v1
         with:
-          dotnet-version: 3.1.x
-      - uses: actions/setup-dotnet@v1      
+          dotnet-version: '6.0'
       - run: dotnet build -c Release
       - run: dotnet test --no-build --verbosity normal
       - uses: pulumi/actions@v3
