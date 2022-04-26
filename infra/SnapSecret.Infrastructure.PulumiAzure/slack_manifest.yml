@@ -8,12 +8,12 @@ features:
     always_online: true
   slash_commands:
     - command: /secret
-      url: https://function-snap-prod.azurewebsites.net/api/v1/secrets-slack
+      url: "https://{{URL}}/api/v1/secrets-slack"
       description: Creates a secret
       should_escape: true
 oauth_config:
   redirect_urls:
-    - https://function-snap-prod.azurewebsites.net/api/oauth2/slack
+    - "https://{{URL}}/api/oauth2/slack"
   scopes:
     bot:
       - channels:read

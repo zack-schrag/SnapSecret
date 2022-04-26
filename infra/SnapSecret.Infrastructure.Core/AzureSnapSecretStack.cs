@@ -23,10 +23,8 @@ namespace SnapSecret.Infrastructure.Core
             var stackName = Pulumi.Deployment.Instance.StackName;
             var stackNameCleaned = StackNameCleaned.GetValueOrDefault(stackName) ?? stackName.ToLowerInvariant().Substring(0, 3);
             var location = new Config("azure-native").Require("location");
-            var keyVaultUri = new Config("SnapSecret").Require("KeyVaultUri");
             var slackClientId = new Config("SnapSecret").Require("SlackClientId");
             var slackClientSecret = new Config("SnapSecret").Require("SlackClientSecret");
-            var slackRedirectUri = new Config("SnapSecret").Require("SlackRedirectUri");
 
             var resourceGroup = new ResourceGroup("ResourceGroup", new ResourceGroupArgs
             {
@@ -103,6 +101,19 @@ namespace SnapSecret.Infrastructure.Core
                 Kind = "web"
             });
 
+            var currentStack = $"zackschrag/{Pulumi.Deployment.Instance.ProjectName}/{Pulumi.Deployment.Instance.StackName}";
+            var stackReference = new StackReference(currentStack);
+            var keyVaultUriOutput = stackReference.GetOutput("KeyVaultUri");
+            var slackRedirectUriOutput = stackReference.GetOutput("AppHostname");
+
+            if (keyVaultUriOutput is null || slackRedirectUriOutput is null)
+            {
+                NeedsRerun = Output.Create(true);
+            }
+
+            var keyVaultUri = keyVaultUriOutput?.Apply(s => $"{s}");
+            var slackRedirectUri = slackRedirectUriOutput?.Apply(s => $"https://{s}/api/oauth2/slack");
+
             var siteConfig = new SiteConfigArgs
             {
                 AppSettings = new List<NameValuePairArgs>
@@ -113,10 +124,10 @@ namespace SnapSecret.Infrastructure.Core
                         new NameValuePairArgs { Name = "AzureWebJobsStorage", Value = GetConnectionString(resourceGroup.Name, storageAccount.Name) },
                         new NameValuePairArgs { Name = "APPINSIGHTS_INSTRUMENTATIONKEY", Value = appInsights.InstrumentationKey },
                         new NameValuePairArgs { Name = "WEBSITE_RUN_FROM_PACKAGE", Value = codeBlobUrl },
-                        new NameValuePairArgs { Name = "AzureKeyVaultSecretsProvider__KeyVaultUri", Value = keyVaultUri },
+                        new NameValuePairArgs { Name = "AzureKeyVaultSecretsProvider__KeyVaultUri", Value = keyVaultUri ?? Output.Create(string.Empty) },
                         new NameValuePairArgs { Name = "Slack__ClientId", Value = slackClientId },
                         new NameValuePairArgs { Name = "Slack__ClientSecret", Value = slackClientSecret },
-                        new NameValuePairArgs { Name = "Slack__RedirectUri", Value = slackRedirectUri }
+                        new NameValuePairArgs { Name = "Slack__RedirectUri", Value = slackRedirectUri ?? Output.Create(string.Empty) }
                     },
                 FtpsState = "FtpsOnly"
             };
@@ -138,19 +149,19 @@ namespace SnapSecret.Infrastructure.Core
 
             var tenantId = app.Identity.Apply(func => func?.TenantId ?? string.Empty);
 
-            var keyVaultNamePrefix = $"kv-snap-{stackNameCleaned}-";
+            var keyVaultNamePrefix = $"kv-snap-{stackNameCleaned}";
 
-            var randomKeyVaultName = new RandomId("KeyVaultRandomId", new RandomIdArgs
+            var randomKeyVaultName = new RandomPet("KeyVaultRandomName", new RandomPetArgs
             {
                 Prefix = keyVaultNamePrefix,
-                ByteLength = 1
+                Length = 1
             });
 
             var keyVault = new Vault("KeyVault", new VaultArgs
             {
                 Location = resourceGroup.Location,
                 ResourceGroupName = resourceGroup.Name,
-                VaultName = randomKeyVaultName.Dec,
+                VaultName = randomKeyVaultName.Id,
                 Properties = new VaultPropertiesArgs
                 {
                     AccessPolicies = new[] {
@@ -170,15 +181,28 @@ namespace SnapSecret.Infrastructure.Core
                         Name = SkuName.Standard
                     },
                     TenantId = tenantId,
-                    EnableSoftDelete = true
+                    EnableSoftDelete = false
                 }
             });
 
             KeyVaultUri = keyVault.Properties.Apply(p => p.VaultUri);
+
+            var manifestTemplate = File.ReadAllText("slack_manifest.yml");
+
+            SlackManifest = app.DefaultHostName.Apply(hostname => manifestTemplate.Replace("{{URL}}", hostname));
         }
 
         [Output]
         public Output<string?> KeyVaultUri { get; set; }
+
+        [Output]
+        public Output<string?> AppHostname { get; set; }
+
+        [Output]
+        public Output<string> SlackManifest { get; set; }
+
+        [Output]
+        public Output<bool> NeedsRerun { get; set; }
 
         private static Output<string> SignedBlobReadUrl(Storage.Blob blob, Storage.BlobContainer container, Storage.StorageAccount account, ResourceGroup resourceGroup)
         {
