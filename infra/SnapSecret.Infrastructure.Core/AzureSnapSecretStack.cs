@@ -104,9 +104,9 @@ namespace SnapSecret.Infrastructure.Core
             var currentStack = $"zackschrag/{Pulumi.Deployment.Instance.ProjectName}/{Pulumi.Deployment.Instance.StackName}";
             var stackReference = new StackReference(currentStack);
             var keyVaultUriOutput = stackReference.GetOutput("KeyVaultUri");
-            var slackRedirectUriOutput = stackReference.GetOutput("AppHostname");
+            var appHostNameOutput = stackReference.GetOutput("AppHostname");
 
-            NeedsRerun = Output.Tuple(keyVaultUriOutput, slackRedirectUriOutput).Apply(t =>
+            NeedsRerun = Output.Tuple(keyVaultUriOutput, appHostNameOutput).Apply(t =>
             {
                 var kvUri = t.Item1 as string;
                 var slackUri = t.Item2 as string;
@@ -115,7 +115,7 @@ namespace SnapSecret.Infrastructure.Core
             });
 
             var keyVaultUri = keyVaultUriOutput?.Apply(s => $"{s}");
-            var slackRedirectUri = slackRedirectUriOutput?.Apply(s => $"https://{s}/api/oauth2/slack");
+            var slackRedirectUri = appHostNameOutput?.Apply(s => $"https://{s}/api/oauth2/slack");
 
             var siteConfig = new SiteConfigArgs
             {
@@ -193,13 +193,14 @@ namespace SnapSecret.Infrastructure.Core
             var manifestTemplate = File.ReadAllText("slack_manifest.yml");
 
             SlackManifest = app.DefaultHostName.Apply(hostname => manifestTemplate.Replace("{{URL}}", hostname));
+            AppHostname = app.DefaultHostName;
         }
 
         [Output]
         public Output<string?> KeyVaultUri { get; set; }
 
         [Output]
-        public Output<string?> AppHostname { get; set; }
+        public Output<string> AppHostname { get; set; }
 
         [Output]
         public Output<string> SlackManifest { get; set; }
