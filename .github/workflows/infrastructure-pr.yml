@@ -1,4 +1,4 @@
-name: Preview Azure Infrastructure
+name: Preview
 on:
   pull_request:
     paths:
@@ -13,11 +13,9 @@ jobs:
       - uses: actions/setup-dotnet@v1
         with:
           dotnet-version: 3.1.x
-      - uses: actions/setup-dotnet@v1
-        with:
-          dotnet-version: '6.0'
-          include-prerelease: true
+      - uses: actions/setup-dotnet@v1      
       - run: dotnet build -c Release
+      - run: dotnet test --no-build --verbosity normal
       - uses: pulumi/actions@v3
         with:
           command: preview
