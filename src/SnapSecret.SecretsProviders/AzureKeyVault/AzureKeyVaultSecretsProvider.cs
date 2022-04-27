@@ -41,6 +41,10 @@ namespace SnapSecret.SecretsProviders.AzureKeyVault
 
                 await deleteOperation.WaitForCompletionAsync();
 
+                var deletedSecret = deleteOperation.Value;
+
+                await _secretClient.PurgeDeletedSecretAsync(deletedSecret.Name);
+
                 _logger.LogInformation("Successfully removed secret {SecretId}", secretId);
             }
             catch (RequestFailedException e)

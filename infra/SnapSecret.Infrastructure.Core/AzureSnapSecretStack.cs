@@ -184,7 +184,7 @@ namespace SnapSecret.Infrastructure.Core
                         Name = SkuName.Standard
                     },
                     TenantId = tenantId,
-                    EnableSoftDelete = false
+                    EnableSoftDelete = true
                 }
             });
 
