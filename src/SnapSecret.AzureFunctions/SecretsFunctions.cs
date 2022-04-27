@@ -201,7 +201,6 @@ namespace SnapSecret.AzureFunctions
             }
 
             return secret;
-                
         }
 
         public CreateSecretRequestDto ToDto()
