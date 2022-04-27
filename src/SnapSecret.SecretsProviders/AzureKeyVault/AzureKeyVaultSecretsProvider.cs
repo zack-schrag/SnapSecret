@@ -114,13 +114,13 @@ namespace SnapSecret.SecretsProviders.AzureKeyVault
 
                 KeyVaultSecret newSecret = await _secretClient.SetSecretAsync(keyVaultSecret);
 
-                var expiresIn = secret.ExpireIn ?? TimeSpan.FromDays(5);
+                var expiresIn = secret.ExpireIn.GetValueOrDefault(TimeSpan.FromDays(5));
 
                 var secretProperties = new SecretProperties(newSecret.Id)
                 {
                     ContentType = "text/plain",
                     Enabled = true,
-                    //ExpiresOn = DateTimeOffset.UtcNow + expiresIn
+                    ExpiresOn = DateTimeOffset.UtcNow.Add(expiresIn)
                 };
 
                 _logger.LogDebug("Created secret {SecretId}", newSecret.Name);
