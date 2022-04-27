@@ -120,7 +120,7 @@ namespace SnapSecret.SecretsProviders.AzureKeyVault
                 {
                     ContentType = "text/plain",
                     Enabled = true,
-                    ExpiresOn = DateTimeOffset.UtcNow + expiresIn
+                    //ExpiresOn = DateTimeOffset.UtcNow + expiresIn
                 };
 
                 _logger.LogDebug("Created secret {SecretId}", newSecret.Name);
