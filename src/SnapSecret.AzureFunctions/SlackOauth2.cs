@@ -16,7 +16,8 @@ namespace SnapSecret.AzureFunctions
 {
     public class SlackOauth2
     {
-        private const string SlackTokenExchangeUrl = "https://slack.com/api/oauth.v2.access";
+        private const string SlackHost = "https://slack.com";
+        private const string SlackTokenExchangePath = "/api/oauth.v2.access";
         private readonly IOptionsSnapshot<SlackConfiguration> _slackConfig;
         private readonly ISecretsProvider _secretsProvider;
 
@@ -44,15 +45,15 @@ namespace SnapSecret.AzureFunctions
         {
             string code = req.Query["code"];
 
-            var client = new RestClient(SlackTokenExchangeUrl);
+            var client = new RestClient(SlackHost);
 
-            IRestRequest request = new RestRequest(Method.POST)
+            var request = new RestRequest(SlackTokenExchangePath, Method.Post)
                 .AddParameter("code", code)
                 .AddParameter("client_id", _slackConfig.Value.ClientId)
                 .AddParameter("client_secret", _slackConfig.Value.ClientSecret)
                 .AddParameter("redirect_uri", _slackConfig.Value.RedirectUri);
 
-            IRestResponse<SlackOauth2Response> oauth2Response = await client.ExecuteAsync<SlackOauth2Response>(request);
+            var oauth2Response = await client.ExecuteAsync<SlackOauth2Response>(request);
 
             if (!oauth2Response.Data.Ok || string.IsNullOrEmpty(oauth2Response.Data.AccessToken))
             {

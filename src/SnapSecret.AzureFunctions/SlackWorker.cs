@@ -14,19 +14,20 @@ namespace SnapSecret.AzureFunctions
     {
         private readonly ISnapSecretBusinessLogic _snapSecretBusinessLogic;
         private readonly ISecretsProvider _secretsProvider;
+        private readonly ILogger _logger;
 
-        public SlackWorker(ISnapSecretBusinessLogic snapSecretBusinessLogic, ISecretsProvider secretsProvider)
+        public SlackWorker(ISnapSecretBusinessLogic snapSecretBusinessLogic, ISecretsProvider secretsProvider, ILogger logger)
         {
             _snapSecretBusinessLogic = snapSecretBusinessLogic;
             _secretsProvider = secretsProvider;
+            _logger = logger;
         }
 
         [FunctionName("SlackWorker")]
         public async Task Run(
-            [QueueTrigger("slack-create-secret")] CreateSecretRequest createSecretRequest,
-            ILogger log)
+            [QueueTrigger("slack-create-secret")] CreateSecretRequest createSecretRequest)
         {
-            log.LogInformation("Received request to create secret. Slack Channel ID: {SlackChannelId}. Team ID: {TeamId}", 
+            _logger.LogInformation("Received request to create secret. Slack Channel ID: {SlackChannelId}. Team ID: {TeamId}", 
                 createSecretRequest.SlackChannelId,
                 createSecretRequest.SlackTeamId);
 
@@ -45,7 +46,7 @@ namespace SnapSecret.AzureFunctions
             if (secret is null)
             {
                 var msg = $"Failed to convert {typeof(CreateSecretRequest)} request to {typeof(IShareableTextSecret)}";
-                log.LogError(msg);
+                _logger.LogError(msg);
                 throw new ArgumentException(msg, nameof(createSecretRequest));
             }
 
@@ -55,7 +56,7 @@ namespace SnapSecret.AzureFunctions
             {
                 var msg = error.UserMessage;
 
-                log.LogError(error.UserMessage);
+                _logger.LogError(error.UserMessage);
 
                 var exception = new Exception(msg);
 
@@ -82,7 +83,7 @@ namespace SnapSecret.AzureFunctions
             }
             catch (Exception e)
             {
-                log.LogError(e, "Failed to send slack message: {Message}", e.Message);
+                _logger.LogError(e, "Failed to send slack message: {Message}", e.Message);
             }
         }
     }

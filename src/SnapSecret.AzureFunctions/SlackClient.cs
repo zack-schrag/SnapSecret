@@ -9,7 +9,8 @@ namespace SnapSecret.AzureFunctions
 {
     public class SlackClient
     {
-        private static readonly string SlackPostMessageUrl = "https://slack.com/api/chat.postMessage";
+        private static readonly string SlackHost = "https://slack.com";
+        private static readonly string SlackPostMessagePath = "/api/chat.postMessage";
 
         private readonly string _accessToken;
         private readonly string _channelId;
@@ -22,9 +23,9 @@ namespace SnapSecret.AzureFunctions
 
         public async Task SendMessageAsync(string message)
         {
-            var client = new RestClient(SlackPostMessageUrl);
+            var client = new RestClient(SlackHost);
 
-            IRestRequest request = new RestRequest(Method.POST)
+            var request = new RestRequest(SlackPostMessagePath, Method.Post)
                 .AddHeader("Authorization", $"Bearer {_accessToken}")
                 .AddHeader("Content-Type", "application/json")
                 .AddJsonBody(new
