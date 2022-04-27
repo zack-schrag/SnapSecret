@@ -10,7 +10,6 @@ using SnapSecret.Application.Abstractions;
 using System.Text.Json;
 using SnapSecret.Domain;
 using System.ComponentModel.DataAnnotations;
-using System.Net;
 
 namespace SnapSecret.AzureFunctions
 {
@@ -19,18 +18,19 @@ namespace SnapSecret.AzureFunctions
         private const string SecretsBasePath = "v1/secrets";
 
         private readonly ISnapSecretBusinessLogic _snapSecretBusinessLogic;
+        private readonly ILogger<SecretsFunctions> _logger;
 
-        public SecretsFunctions(ISnapSecretBusinessLogic snapSecretBusinessLogic)
+        public SecretsFunctions(ISnapSecretBusinessLogic snapSecretBusinessLogic, ILogger<SecretsFunctions> logger)
         {
             _snapSecretBusinessLogic = snapSecretBusinessLogic;
+            _logger = logger;
         }
 
         [FunctionName("CreateSecret")]
         public async Task<IActionResult> CreateSecretAsync(
-            [HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = "v1/secrets")] HttpRequest req,
-            ILogger log)
+            [HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = "v1/secrets")] HttpRequest req)
         {
-            log.LogInformation("Creating new secret");
+            _logger.LogInformation("Creating new secret");
 
             string requestBody = await new StreamReader(req.Body).ReadToEndAsync();
 
@@ -41,20 +41,19 @@ namespace SnapSecret.AzureFunctions
 
             if (createSecretRequest is null)
             {
-                log.LogError($"Failed to deserialize request to {typeof(CreateSecretRequest)}");
+                _logger.LogError($"Failed to deserialize request to {typeof(CreateSecretRequest)}");
                 return new StatusCodeResult(500);
             }
 
-            return await CreateSecretInternalAsync(req, createSecretRequest, log);
+            return await CreateSecretInternalAsync(req, createSecretRequest);
         }
 
         [FunctionName("SlackCreateSecret")]
         public async Task<IActionResult> SlackCreateSecretAsync(
             [HttpTrigger(AuthorizationLevel.Anonymous, "post", Route = "v1/secrets-slack")] HttpRequest req,
-            [Queue("slack-create-secret")] IAsyncCollector<CreateSecretRequest> slackQueue,
-            ILogger log)
+            [Queue("slack-create-secret")] IAsyncCollector<CreateSecretRequest> slackQueue)
         {
-            log.LogInformation("Creating new secret");
+            _logger.LogInformation("Creating new secret");
 
             var formCollection = await req.ReadFormAsync();
 
@@ -79,15 +78,16 @@ namespace SnapSecret.AzureFunctions
         public async Task<IActionResult> AccessSecretAsync(
             [HttpTrigger(AuthorizationLevel.Anonymous, "get", Route = "v1/secrets/{secretId}")] HttpRequest req,
             ExecutionContext executionContext,
-            Guid secretId,
-            ILogger log)
+            Guid secretId)
         {
-            log.LogInformation($"Attempting to access secret {secretId}");
+            _logger.LogInformation("Attempting to access secret {SecretId}", secretId);
 
             var (secret, error) = await _snapSecretBusinessLogic.AccessSecretAsync(secretId);
 
             if (error != null)
             {
+                _logger.LogError("Failed to access secret {SecretId}: {Error}", secretId, error.ToResponse());
+
                 return new ObjectResult(error.ToResponse())
                 {
                     StatusCode = 500
@@ -112,14 +112,13 @@ namespace SnapSecret.AzureFunctions
 
         private async Task<IActionResult> CreateSecretInternalAsync(
             HttpRequest req,
-            CreateSecretRequest createSecretRequest,
-            ILogger log)
+            CreateSecretRequest createSecretRequest)
         {
             var secret = createSecretRequest.ToShareableTextSecret();
 
             if (secret is null)
             {
-                log.LogError($"Failed to convert {typeof(CreateSecretRequest)} request to {typeof(IShareableTextSecret)}");
+                _logger.LogError($"Failed to convert {typeof(CreateSecretRequest)} request to {typeof(IShareableTextSecret)}");
                 return new StatusCodeResult(500);
             }
 

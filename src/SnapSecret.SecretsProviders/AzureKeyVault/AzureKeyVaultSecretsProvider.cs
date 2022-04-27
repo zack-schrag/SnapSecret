@@ -67,7 +67,7 @@ namespace SnapSecret.SecretsProviders.AzureKeyVault
         {
             try
             {
-                var secret = await _secretClient.GetSecretAsync(Convert.ToString(secretId));
+                var secret = await _secretClient.GetSecretAsync(secretId);
 
                 var expiresOn = secret.Value.Properties.ExpiresOn ?? DateTimeOffset.UtcNow.AddYears(9999);
 
