@@ -35,13 +35,13 @@ namespace SnapSecret.SecretsProviders.AzureKeyVault
         {
             try
             {
+                _logger.LogInformation("Expiring secret {SecretId}", secretId);
+
                 var deleteOperation = await _secretClient.StartDeleteSecretAsync(Convert.ToString(secretId));
 
                 await deleteOperation.WaitForCompletionAsync();
 
-                //var deletedSecret = deleteOperation.Value;
-
-                //await _secretClient.PurgeDeletedSecretAsync(deletedSecret.Name);
+                _logger.LogInformation("Successfully removed secret {SecretId}", secretId);
             }
             catch (RequestFailedException e)
             {
@@ -103,11 +103,10 @@ namespace SnapSecret.SecretsProviders.AzureKeyVault
         public async Task<(string?, SnapSecretError?)> SetSecretAsync(IShareableTextSecret secret)
         {
             var secretId = secret.Id;
-            var secretName = Convert.ToString(secretId);
 
             try
             {
-                var keyVaultSecret = new KeyVaultSecret(secretName, secret.Text);
+                var keyVaultSecret = new KeyVaultSecret(secretId, secret.Text);
 
                 KeyVaultSecret newSecret = await _secretClient.SetSecretAsync(keyVaultSecret);
 
