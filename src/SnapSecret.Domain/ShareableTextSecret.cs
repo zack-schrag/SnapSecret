@@ -15,7 +15,7 @@ namespace SnapSecret.Domain
         public ShareableTextSecret(string text)
         {
             Text = text;
-            ExpireIn = TimeSpan.FromHours(1);
+            ExpireIn = TimeSpan.FromDays(3);
             Id = Guid.NewGuid().ToString();
         }
 
