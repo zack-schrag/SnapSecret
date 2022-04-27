@@ -14,9 +14,9 @@ namespace SnapSecret.AzureFunctions
     {
         private readonly ISnapSecretBusinessLogic _snapSecretBusinessLogic;
         private readonly ISecretsProvider _secretsProvider;
-        private readonly ILogger _logger;
+        private readonly ILogger<SlackWorker> _logger;
 
-        public SlackWorker(ISnapSecretBusinessLogic snapSecretBusinessLogic, ISecretsProvider secretsProvider, ILogger logger)
+        public SlackWorker(ISnapSecretBusinessLogic snapSecretBusinessLogic, ISecretsProvider secretsProvider, ILogger<SlackWorker> logger)
         {
             _snapSecretBusinessLogic = snapSecretBusinessLogic;
             _secretsProvider = secretsProvider;
