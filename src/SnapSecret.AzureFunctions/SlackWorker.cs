@@ -16,7 +16,10 @@ namespace SnapSecret.AzureFunctions
         private readonly ISecretsProvider _secretsProvider;
         private readonly ILogger<SlackWorker> _logger;
 
-        public SlackWorker(ISnapSecretBusinessLogic snapSecretBusinessLogic, ISecretsProvider secretsProvider, ILogger<SlackWorker> logger)
+        public SlackWorker(
+            ISnapSecretBusinessLogic snapSecretBusinessLogic,
+            ISecretsProvider secretsProvider,
+            ILogger<SlackWorker> logger)
         {
             _snapSecretBusinessLogic = snapSecretBusinessLogic;
             _secretsProvider = secretsProvider;
@@ -25,11 +28,13 @@ namespace SnapSecret.AzureFunctions
 
         [FunctionName("SlackWorker")]
         public async Task Run(
-            [QueueTrigger("slack-create-secret")] CreateSecretRequest createSecretRequest)
+            [QueueTrigger("slack-create-secret")] CreateSecretRequest createSecretRequest,
+            ExecutionContext context)
         {
-            _logger.LogInformation("Received request to create secret. Slack Channel ID: {SlackChannelId}. Team ID: {TeamId}", 
+            _logger.LogInformation("Received request to create secret. Slack Channel ID: {SlackChannelId}. Team ID: {TeamId}. Invocation ID: {InvocationId}", 
                 createSecretRequest.SlackChannelId,
-                createSecretRequest.SlackTeamId);
+                createSecretRequest.SlackTeamId,
+                context.InvocationId);
 
             if (string.IsNullOrEmpty(createSecretRequest.SlackChannelId))
             {
