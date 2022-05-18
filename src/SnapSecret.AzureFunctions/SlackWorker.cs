@@ -73,12 +73,12 @@ namespace SnapSecret.AzureFunctions
                 throw exception;
             }
 
-            //var (slackAccessToken, getSecretError) = await _secretsProvider.GetSecretAsync(createSecretRequest.SlackTeamId);
+            var (slackAccessToken, getSecretError) = await _secretsProvider.GetSecretAsync(createSecretRequest.SlackTeamId);
 
-            //if (getSecretError != null || slackAccessToken is null)
-            //{
-            //    throw new Exception($"Failed to retrieve Slack access token for team id {createSecretRequest.SlackTeamId}");
-            //}
+            if (getSecretError != null || slackAccessToken is null)
+            {
+                throw new Exception($"Failed to retrieve Slack access token for team id {createSecretRequest.SlackTeamId}");
+            }
 
             //var slackClient = new SlackClient(slackAccessToken.Text, createSecretRequest.SlackChannelId);
 
