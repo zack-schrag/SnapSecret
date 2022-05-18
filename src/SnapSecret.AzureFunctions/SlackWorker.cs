@@ -57,21 +57,21 @@ namespace SnapSecret.AzureFunctions
 
             var (secretId, error) = await _snapSecretBusinessLogic.SubmitSecretAsync(secret);
 
-            //if (error != null)
-            //{
-            //    var msg = error.UserMessage;
+            if (error != null)
+            {
+                var msg = error.UserMessage;
 
-            //    _logger.LogError(error.UserMessage);
+                _logger.LogError(error.UserMessage);
 
-            //    var exception = new Exception(msg);
+                var exception = new Exception(msg);
 
-            //    if (error.Exceptions.Count > 0)
-            //    {
-            //        exception = new Exception(msg, error.Exceptions.First());
-            //    }
-                
-            //    throw exception;
-            //}
+                if (error.Exceptions.Count > 0)
+                {
+                    exception = new Exception(msg, error.Exceptions.First());
+                }
+
+                throw exception;
+            }
 
             //var (slackAccessToken, getSecretError) = await _secretsProvider.GetSecretAsync(createSecretRequest.SlackTeamId);
 
