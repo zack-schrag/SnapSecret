@@ -25,6 +25,9 @@ namespace SnapSecret.Infrastructure.Core
             var location = new Config("azure-native").Require("location");
             var slackClientId = new Config("SnapSecret").Require("SlackClientId");
             var slackClientSecret = new Config("SnapSecret").Require("SlackClientSecret");
+            var grafanaUrl = new Config("SnapSecret").Require("GrafanaUrl");
+            var grafanaLogin = new Config("SnapSecret").Require("GrafanaLogin");
+            var grafanaPassword = new Config("SnapSecret").Require("GrafanaPassword");
 
             var resourceGroup = new ResourceGroup("ResourceGroup", new ResourceGroupArgs
             {
@@ -130,7 +133,20 @@ namespace SnapSecret.Infrastructure.Core
                         new NameValuePairArgs { Name = "AzureKeyVaultSecretsProvider__KeyVaultUri", Value = keyVaultUri ?? Output.Create(string.Empty) },
                         new NameValuePairArgs { Name = "Slack__ClientId", Value = slackClientId },
                         new NameValuePairArgs { Name = "Slack__ClientSecret", Value = slackClientSecret },
-                        new NameValuePairArgs { Name = "Slack__RedirectUri", Value = slackRedirectUri ?? Output.Create(string.Empty) }
+                        new NameValuePairArgs { Name = "Slack__RedirectUri", Value = slackRedirectUri ?? Output.Create(string.Empty) },
+                        new NameValuePairArgs { Name = "Serilog:Using:0", Value = "Serilog.Sinks.Console" },
+                        new NameValuePairArgs { Name = "Serilog:Using:1", Value = "Serilog.Sinks.Grafana.Loki" },
+                        new NameValuePairArgs { Name = "Serilog:MinimumLevel:Default", Value = "Serilog.Sinks.Grafana.Loki" },
+                        new NameValuePairArgs { Name = "Serilog:MinimumLevel:Override:Microsoft", Value = "Warning" },
+                        new NameValuePairArgs { Name = "Serilog:MinimumLevel:Override:Azure.Core", Value = "Error" },
+                        new NameValuePairArgs { Name = "Serilog:MinimumLevel:Override:Azure.Storage", Value = "Error" },
+                        new NameValuePairArgs { Name = "Serilog:Properties:Environment", Value = stackName },
+                        new NameValuePairArgs { Name = "Serilog:WriteTo:0:Name", Value = "Console" },
+                        new NameValuePairArgs { Name = "Serilog:WriteTo:1:Name", Value = "GrafanaLoki" },
+                        new NameValuePairArgs { Name = "Serilog:WriteTo:1:Args:uri", Value = grafanaUrl },
+                        new NameValuePairArgs { Name = "Serilog:WriteTo:1:Args:credentials:login", Value = grafanaLogin },
+                        new NameValuePairArgs { Name = "Serilog:WriteTo:1:Args:credentials:password", Value = grafanaPassword },
+                        new NameValuePairArgs { Name = "Serilog:WriteTo:1:Args:textFormatter", Value = "Serilog.Sinks.Grafana.Loki.LokiJsonTextFormatter, Serilog.Sinks.Grafana.Loki" }
                     },
                 FtpsState = "FtpsOnly"
             };

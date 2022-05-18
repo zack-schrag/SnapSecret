@@ -1,4 +1,10 @@
 config:
+  SnapSecret:GrafanaLogin:
+    secure: AAABABDM1MlreBDTp5TI5x8pT91TUPm1RERiFYUUktFBd6kZTVo=
+  SnapSecret:GrafanaPassword:
+    secure: AAABAJR7SQPANdBqLV2I7bsl52fkPsaeI08OfkH3A49kEw2TjzMLUdVWq+aT9q13UgOAeu5qjLIfBVIrHjWptid2rIthR6AqKoPr0OQK8+6S8gZNIH/Xwm91QtmXtcp5ifuZPuEvZJiNH2rUffIvmw52nrS0Hdpa6V8z/rmPo534V7awADs9mA==
+  SnapSecret:GrafanaUrl:
+    secure: AAABAFkOl8qyyYFc+F0CMMZiFOnbMVoGRUq3fEWZ09Y+bZKzjr3xMyVVv/pbQiJLpeDM8OT5kVqgpO93b00=
   SnapSecret:SlackClientId: "710334160950.2613232792434"
   SnapSecret:SlackClientSecret:
     secure: AAABAGkA1jBtp+QVAyqN8Jap2il9d/bSgsnmS4J8jHWQzxvrvbpQme6vR/e75rGqW/cpp5D5+cHJpcIzjW5MVg==

@@ -15,8 +15,6 @@ namespace SnapSecret.AzureFunctions
 {
     public class SecretsFunctions
     {
-        private const string SecretsBasePath = "v1/secrets";
-
         private readonly ISnapSecretBusinessLogic _snapSecretBusinessLogic;
         private readonly ILogger<SecretsFunctions> _logger;
 

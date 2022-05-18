@@ -1,5 +1,6 @@
 ﻿using Microsoft.Azure.Functions.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection;
+using Serilog;
 using SnapSecret.Application;
 using SnapSecret.Application.Abstractions;
 using SnapSecret.AzureFunctions;
@@ -15,7 +16,13 @@ namespace SnapSecret.AzureFunctions
         {
             var configuration = builder.GetContext().Configuration;
 
+            Serilog.Debugging.SelfLog.Enable(System.Console.Error);
+
+            var logger = new LoggerConfiguration()
+                .ReadFrom.Configuration(configuration)
+                .CreateLogger();
             builder.Services
+                .AddLogging(loggingBuilder => loggingBuilder.AddSerilog(logger))
                 .AddTransient<ISnapSecretBusinessLogic, SnapSecretBusinessLogic>()
                 .AddAzureKeyVaultProvider(configuration);
 
