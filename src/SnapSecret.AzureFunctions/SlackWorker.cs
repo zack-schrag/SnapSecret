@@ -57,39 +57,39 @@ namespace SnapSecret.AzureFunctions
 
             var (secretId, error) = await _snapSecretBusinessLogic.SubmitSecretAsync(secret);
 
-            if (error != null)
-            {
-                var msg = error.UserMessage;
+            //if (error != null)
+            //{
+            //    var msg = error.UserMessage;
 
-                _logger.LogError(error.UserMessage);
+            //    _logger.LogError(error.UserMessage);
 
-                var exception = new Exception(msg);
+            //    var exception = new Exception(msg);
 
-                if (error.Exceptions.Count > 0)
-                {
-                    exception = new Exception(msg, error.Exceptions.First());
-                }
+            //    if (error.Exceptions.Count > 0)
+            //    {
+            //        exception = new Exception(msg, error.Exceptions.First());
+            //    }
                 
-                throw exception;
-            }
+            //    throw exception;
+            //}
 
-            var (slackAccessToken, getSecretError) = await _secretsProvider.GetSecretAsync(createSecretRequest.SlackTeamId);
+            //var (slackAccessToken, getSecretError) = await _secretsProvider.GetSecretAsync(createSecretRequest.SlackTeamId);
 
-            if (getSecretError != null || slackAccessToken is null)
-            {
-                throw new Exception($"Failed to retrieve Slack access token for team id {createSecretRequest.SlackTeamId}");
-            }
+            //if (getSecretError != null || slackAccessToken is null)
+            //{
+            //    throw new Exception($"Failed to retrieve Slack access token for team id {createSecretRequest.SlackTeamId}");
+            //}
 
-            var slackClient = new SlackClient(slackAccessToken.Text, createSecretRequest.SlackChannelId);
+            //var slackClient = new SlackClient(slackAccessToken.Text, createSecretRequest.SlackChannelId);
 
-            try
-            {
-                await slackClient.SendMessageAsync($"Here's your link! {createSecretRequest.BaseSecretsPath}{secretId}");
-            }
-            catch (Exception e)
-            {
-                _logger.LogError(e, "Failed to send slack message: {Message}", e.Message);
-            }
+            //try
+            //{
+            //    await slackClient.SendMessageAsync($"Here's your link! {createSecretRequest.BaseSecretsPath}{secretId}");
+            //}
+            //catch (Exception e)
+            //{
+            //    _logger.LogError(e, "Failed to send slack message: {Message}", e.Message);
+            //}
         }
     }
 }
