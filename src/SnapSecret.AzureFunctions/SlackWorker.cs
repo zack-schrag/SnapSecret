@@ -84,7 +84,7 @@ namespace SnapSecret.AzureFunctions
 
             try
             {
-                await slackClient.SendMessageAsync($"{createSecretRequest.BaseSecretsPath}{secretId}");
+                await slackClient.SendMessageAsync($"Here's your link! {createSecretRequest.BaseSecretsPath}{secretId}");
             }
             catch (Exception e)
             {
