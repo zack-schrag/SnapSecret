@@ -136,7 +136,7 @@ namespace SnapSecret.Infrastructure.Core
                         new NameValuePairArgs { Name = "Slack__RedirectUri", Value = slackRedirectUri ?? Output.Create(string.Empty) },
                         new NameValuePairArgs { Name = "Serilog:Using:0", Value = "Serilog.Sinks.Console" },
                         new NameValuePairArgs { Name = "Serilog:Using:1", Value = "Serilog.Sinks.Grafana.Loki" },
-                        new NameValuePairArgs { Name = "Serilog:MinimumLevel:Default", Value = "Serilog.Sinks.Grafana.Loki" },
+                        new NameValuePairArgs { Name = "Serilog:MinimumLevel:Default", Value = "Information" },
                         new NameValuePairArgs { Name = "Serilog:MinimumLevel:Override:Microsoft", Value = "Warning" },
                         new NameValuePairArgs { Name = "Serilog:MinimumLevel:Override:Azure.Core", Value = "Error" },
                         new NameValuePairArgs { Name = "Serilog:MinimumLevel:Override:Azure.Storage", Value = "Error" },
