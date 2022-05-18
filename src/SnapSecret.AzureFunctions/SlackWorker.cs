@@ -80,16 +80,16 @@ namespace SnapSecret.AzureFunctions
                 throw new Exception($"Failed to retrieve Slack access token for team id {createSecretRequest.SlackTeamId}");
             }
 
-            //var slackClient = new SlackClient(slackAccessToken.Text, createSecretRequest.SlackChannelId);
+            var slackClient = new SlackClient(slackAccessToken.Text, createSecretRequest.SlackChannelId);
 
-            //try
-            //{
-            //    await slackClient.SendMessageAsync($"Here's your link! {createSecretRequest.BaseSecretsPath}{secretId}");
-            //}
-            //catch (Exception e)
-            //{
-            //    _logger.LogError(e, "Failed to send slack message: {Message}", e.Message);
-            //}
+            try
+            {
+                await slackClient.SendMessageAsync($"{createSecretRequest.BaseSecretsPath}{secretId}");
+            }
+            catch (Exception e)
+            {
+                _logger.LogError(e, "Failed to send slack message: {Message}", e.Message);
+            }
         }
     }
 }
