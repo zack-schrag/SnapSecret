@@ -29,7 +29,8 @@ namespace SnapSecret.AzureFunctions
                 {
                     channel = _channelId,
                     text = message,
-                    unfurl_links = false
+                    unfurl_links = false,
+                    unfurl_media = false
                 });
 
             var response = await client.ExecuteAsync<SlackResponse>(request);
