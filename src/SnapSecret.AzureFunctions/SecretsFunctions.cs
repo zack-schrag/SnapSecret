@@ -58,7 +58,7 @@ namespace SnapSecret.AzureFunctions
 
             var text = formCollection["text"];
 
-            if (text.Count > 10000)
+            if (text.ToString().Length > 10000)
             {
                 return new BadRequestObjectResult("Secret can't be longer than 3000 characters");
             }
