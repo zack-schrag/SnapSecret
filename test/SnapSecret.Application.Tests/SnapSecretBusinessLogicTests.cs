@@ -58,14 +58,14 @@ namespace SnapSecret.Application.Tests
         public async Task ShouldBeAbleToAccessSecret()
         {
             var expectedSecret = new ShareableTextSecret("foo");
-            var secretId = Guid.NewGuid();
+            var secretId = Guid.NewGuid().ToString();
 
             _mockSecretsProvider
-                .Setup(mock => mock.GetSecretAsync(secretId.ToString()))
+                .Setup(mock => mock.GetSecretAsync(secretId))
                 .ReturnsAsync((expectedSecret, default));
 
             _mockSecretsProvider
-                .Setup(mock => mock.ExpireSecretAsync(secretId.ToString()))
+                .Setup(mock => mock.ExpireSecretAsync(secretId))
                 .ReturnsAsync(default(SnapSecretError));
 
             var service = new SnapSecretBusinessLogic(_mockSecretsProvider.Object);
@@ -76,8 +76,8 @@ namespace SnapSecret.Application.Tests
             Assert.Null(result.Item2);
             Assert.Equal(result.Item1?.Text, expectedSecret.Text);
 
-            _mockSecretsProvider.Verify(mock => mock.GetSecretAsync(secretId.ToString()), Times.Once);
-            _mockSecretsProvider.Verify(mock => mock.ExpireSecretAsync(secretId.ToString()), Times.Once);
+            _mockSecretsProvider.Verify(mock => mock.GetSecretAsync(secretId), Times.Once);
+            _mockSecretsProvider.Verify(mock => mock.ExpireSecretAsync(secretId), Times.Once);
         }
 
         [Fact]
@@ -95,7 +95,7 @@ namespace SnapSecret.Application.Tests
 
             var service = new SnapSecretBusinessLogic(_mockSecretsProvider.Object);
 
-            var result = await service.AccessSecretAsync(Guid.NewGuid());
+            var result = await service.AccessSecretAsync("1234");
 
             Assert.Null(result.Item1);
             Assert.NotNull(result.Item2);
@@ -110,7 +110,7 @@ namespace SnapSecret.Application.Tests
         public async Task ShouldReturnErrorOnExpireSecretError()
         {
             var expectedSecret = new ShareableTextSecret("foo");
-            var secretId = Guid.NewGuid();
+            var secretId = Guid.NewGuid().ToString();
 
             var userMessage = "Some error";
             var errorType = SnapSecretErrorType.ProviderRequestError;
@@ -119,11 +119,11 @@ namespace SnapSecret.Application.Tests
                 .WithUserMessage(userMessage);
 
             _mockSecretsProvider
-                .Setup(mock => mock.GetSecretAsync(secretId.ToString()))
+                .Setup(mock => mock.GetSecretAsync(secretId))
                 .ReturnsAsync((expectedSecret, default));
 
             _mockSecretsProvider
-                .Setup(mock => mock.ExpireSecretAsync(secretId.ToString()))
+                .Setup(mock => mock.ExpireSecretAsync(secretId))
                 .ReturnsAsync(error);
 
             var service = new SnapSecretBusinessLogic(_mockSecretsProvider.Object);
