@@ -10,6 +10,7 @@ using SnapSecret.Application.Abstractions;
 using System.Text.Json;
 using SnapSecret.Domain;
 using System.ComponentModel.DataAnnotations;
+using System.Text;
 
 namespace SnapSecret.AzureFunctions
 {
@@ -55,9 +56,16 @@ namespace SnapSecret.AzureFunctions
 
             var formCollection = await req.ReadFormAsync();
 
+            var text = formCollection["text"];
+
+            if (text.Count > 10000)
+            {
+                return new BadRequestObjectResult("Secret can't be longer than 3000 characters");
+            }
+
             var createSecretRequest = new CreateSecretRequest
             {
-                Text = formCollection["text"],
+                Text = text,
                 BaseSecretsPath = $"{req.Scheme}://{req.Host}/api/v1/secrets/",
                 SlackChannelId = formCollection["channel_id"],
                 SlackTeamId = formCollection["team_id"]
