@@ -28,7 +28,8 @@ namespace SnapSecret.AzureFunctions
                 .AddJsonBody(new
                 {
                     channel = _channelId,
-                    text = message
+                    text = message,
+                    unfurl_links = false
                 });
 
             var response = await client.ExecuteAsync<SlackResponse>(request);
