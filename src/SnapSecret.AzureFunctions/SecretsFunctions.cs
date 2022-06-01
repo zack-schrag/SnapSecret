@@ -92,32 +92,39 @@ namespace SnapSecret.AzureFunctions
             string secretId)
         {
             var reveal = false;
+
             if (req.Query.TryGetValue("reveal", out var val))
             {
                 reveal = val.ToArray().Contains("true");
             }
 
-            _logger.LogInformation("Attempting to access secret {SecretId}", secretId);
+            var replacement = "****";
 
-            var (secret, error) = await _snapSecretBusinessLogic.AccessSecretAsync(secretId);
-
-            if (error != null)
+            if (reveal)
             {
-                _logger.LogError("Failed to access secret {SecretId}: {Error}", secretId, error.ToResponse());
+                _logger.LogInformation("Attempting to access secret {SecretId}", secretId);
 
-                return new ObjectResult(error.ToResponse())
+                var (secret, error) = await _snapSecretBusinessLogic.AccessSecretAsync(secretId);
+
+                if (error != null)
                 {
-                    StatusCode = 500
-                };
-            }
+                    _logger.LogError("Failed to access secret {SecretId}: {Error}", secretId, error.ToResponse());
 
-            if (secret is null)
-            {
-                return new StatusCodeResult(500);
+                    return new ObjectResult(error.ToResponse())
+                    {
+                        StatusCode = 500
+                    };
+                }
+
+                if (secret is null)
+                {
+                    return new StatusCodeResult(500);
+                }
+
+                replacement = secret.Text;
             }
 
             var path = Path.Combine(executionContext.FunctionDirectory, "../secret.html");
-            var replacement = reveal ? secret.Text : "****";
             var html = File.ReadAllText(path).Replace("{{SECRET}}", replacement);
 
             return new ContentResult
