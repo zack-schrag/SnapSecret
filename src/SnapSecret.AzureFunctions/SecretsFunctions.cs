@@ -11,6 +11,7 @@ using System.Text.Json;
 using SnapSecret.Domain;
 using System.ComponentModel.DataAnnotations;
 using System.Text;
+using System.Linq;
 
 namespace SnapSecret.AzureFunctions
 {
@@ -90,6 +91,12 @@ namespace SnapSecret.AzureFunctions
             ExecutionContext executionContext,
             string secretId)
         {
+            var reveal = false;
+            if (req.Query.TryGetValue("reveal", out var val))
+            {
+                reveal = val.ToArray().Contains("true");
+            }
+
             _logger.LogInformation("Attempting to access secret {SecretId}", secretId);
 
             var (secret, error) = await _snapSecretBusinessLogic.AccessSecretAsync(secretId);
@@ -110,7 +117,8 @@ namespace SnapSecret.AzureFunctions
             }
 
             var path = Path.Combine(executionContext.FunctionDirectory, "../secret.html");
-            var html = File.ReadAllText(path).Replace("{{SECRET}}", secret.Text);
+            var replacement = reveal ? secret.Text : "****";
+            var html = File.ReadAllText(path).Replace("{{SECRET}}", replacement);
 
             return new ContentResult
             {
