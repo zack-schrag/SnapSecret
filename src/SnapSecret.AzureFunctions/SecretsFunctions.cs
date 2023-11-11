@@ -171,7 +171,8 @@ namespace SnapSecret.AzureFunctions
             {
                 return new CreatedResult($"{req.Scheme}://{req.Host}{req.Path}/{secretId}", new
                 {
-                    message = "Successfully created secret"
+                    message = "Successfully created secret",
+                    url = $"{req.Scheme}://{req.Host}{req.Path}/{secretId}"
                 });
             }
         }
